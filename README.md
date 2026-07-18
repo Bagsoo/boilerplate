@@ -24,6 +24,7 @@
   - shimmer + cached_network_image 공통 위젯
   - 앱 아이콘 + 스플래시 (이미지만 교체하면 됨)
   - DEBUG 배너 제거
+  - 설정스크린에 앱 버전 감지 후 노출
 ✅ 기능
   - 프로필 이미지 업로드 (Supabase Storage)
   - FCM 푸시 알림

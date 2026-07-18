@@ -4,6 +4,7 @@ import 'package:flutter_pt/features/auth/providers/auth_provider.dart';
 import 'package:flutter_pt/features/profile/providers/profile_provider.dart';
 import 'package:flutter_pt/features/settings/providers/theme_provider.dart';
 import 'package:flutter_pt/features/notifications/providers/notifications_provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/avatar_image.dart';
 
@@ -15,6 +16,22 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreen extends ConsumerState<SettingsScreen> {
+  String _version = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _version = '${info.version}'; // 빌드 넘버 미포함
+      // _version = '${info.version} (${info.buildNumber})'; //빌드 넘버 포함
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
@@ -65,6 +82,12 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
               foregroundColor: Colors.white,
             ),
           ),
+          const Spacer(),
+          Text(
+            '버전 $_version',
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
