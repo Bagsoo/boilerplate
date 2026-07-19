@@ -5,11 +5,11 @@ import '../../core/services/fcm_service.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/signup_screen.dart';
-import '../home/screens/home_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 import '../features/auth/screens/terms_screen.dart';
 import '../features/notifications/screens/notification_screen.dart';
+import '../features/home/screens/home_screen.dart';
 import 'scaffold_with_nav.dart';
 
 final router = GoRouter(
