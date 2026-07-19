@@ -45,5 +45,7 @@ app.*.map.json
 /android/app/release
 
 .env
+.env.dev
+.env.prod
 google-services.json
 GoogleService-Info.plist

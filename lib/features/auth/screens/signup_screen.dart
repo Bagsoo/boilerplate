@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pt/features/auth/providers/auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../features/auth/providers/auth_provider.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_text_field.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -11,15 +13,14 @@ class SignupScreen extends ConsumerStatefulWidget {
 }
 
 class _SignupScreenState extends ConsumerState<SignupScreen> {
-  final _formKey = GlobalKey<FormState>(); // ① Form 키
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
   final _nicknameController = TextEditingController();
-  bool _passwordVisible = false; // ② 비밀번호 보기/숨기기
+  bool _passwordVisible = false;
   bool _passwordConfirmVisible = false;
 
-  // ③ 유효성 검사 함수들
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) return '이메일을 입력해주세요.';
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -48,9 +49,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   void _goToTerms() {
-    // ④ 유효성 검사 통과 시에만 terms로 이동
     if (!_formKey.currentState!.validate()) return;
-
     context.push(
       '/terms',
       extra: <String, dynamic>{
@@ -78,77 +77,70 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('회원가입')),
       body: SingleChildScrollView(
-        // ⑤ 키보드 올라와도 스크롤 가능
         padding: const EdgeInsets.all(24.0),
         child: Form(
-          key: _formKey, // ⑥ Form 연결
+          key: _formKey,
           child: Column(
             children: [
-              // 이메일
-              TextFormField(
+              AppTextField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: '이메일'),
+                label: '이메일',
                 keyboardType: TextInputType.emailAddress,
-                validator: _validateEmail, // ⑦ 검사 함수 연결
+                validator: _validateEmail,
+                prefixIcon: const Icon(Icons.email_outlined),
               ),
               const SizedBox(height: 16),
 
-              // 비밀번호
-              TextFormField(
+              AppTextField(
                 controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: '비밀번호',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _passwordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () =>
-                        setState(() => _passwordVisible = !_passwordVisible),
-                  ),
-                ),
+                label: '비밀번호',
                 obscureText: !_passwordVisible,
                 validator: _validatePassword,
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () =>
+                      setState(() => _passwordVisible = !_passwordVisible),
+                ),
               ),
               const SizedBox(height: 16),
 
-              // 비밀번호 확인
-              TextFormField(
+              AppTextField(
                 controller: _passwordConfirmController,
-                decoration: InputDecoration(
-                  labelText: '비밀번호 확인',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _passwordConfirmVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () => setState(
-                      () => _passwordConfirmVisible = !_passwordConfirmVisible,
-                    ),
-                  ),
-                ),
+                label: '비밀번호 확인',
                 obscureText: !_passwordConfirmVisible,
                 validator: _validatePasswordConfirm,
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _passwordConfirmVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () => setState(
+                    () => _passwordConfirmVisible = !_passwordConfirmVisible,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
 
-              // 닉네임
-              TextFormField(
+              AppTextField(
                 controller: _nicknameController,
-                decoration: const InputDecoration(labelText: '닉네임'),
+                label: '닉네임',
                 validator: _validateNickname,
+                prefixIcon: const Icon(Icons.person_outline),
               ),
               const SizedBox(height: 24),
 
-              // 회원가입 버튼
-              ElevatedButton(
-                onPressed: isLoading ? null : _goToTerms,
-                child: isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('회원가입'),
+              AppButton(
+                label: '회원가입',
+                isLoading: isLoading,
+                onPressed: _goToTerms,
+                icon: Icons.arrow_forward,
               ),
+              const SizedBox(height: 8),
               TextButton(
                 onPressed: () => context.go('/login'),
                 child: const Text('이미 계정이 있어요? 로그인'),

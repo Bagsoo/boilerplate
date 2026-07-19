@@ -1,4 +1,15 @@
-현재 완료된 보일러플레이트
+## 실행 방법
+# 개발
+flutter run -t lib/main_dev.dart
+
+# 프로덕션
+flutter run -t lib/main_prod.dart
+
+# 빌드
+flutter build apk -t lib/main_prod.dart
+flutter build ipa -t lib/main_prod.dart
+
+# 현재 완료된 보일러플레이트
 ✅ 인증
   - 이메일 로그인/회원가입
   - 구글 소셜 로그인
@@ -25,6 +36,8 @@
   - 앱 아이콘 + 스플래시 (이미지만 교체하면 됨)
   - DEBUG 배너 제거
   - 설정스크린에 앱 버전 감지 후 노출
+  - notifications_screen 페이지(10)네이션
+  - 공통위젯 사용법 맨 아래
 ✅ 기능
   - 프로필 이미지 업로드 (Supabase Storage)
   - FCM 푸시 알림
@@ -257,3 +270,64 @@ logger.e('에러: 로그인 실패',          // 🚨 error
 Firebase Console → Crashlytics 활성화
 별도 설정 없이 firebase_crashlytics 패키지만 있으면 자동 수집
 테스트: FirebaseCrashlytics.instance.crash() 호출
+
+## 공통 위젯
+
+### AppButton
+AppButton(label: '확인', onPressed: () {}, isLoading: false)
+AppButton(label: '삭제', type: AppButtonType.danger, onPressed: () {})
+AppButton(label: '취소', type: AppButtonType.ghost, onPressed: () {})
+AppButton(
+  label: '로그인',
+  isLoading: isLoading,
+  onPressed: _signIn,
+  icon: Icons.login,
+)
+AppButton(
+  label: '회원탈퇴',
+  type: AppButtonType.danger,
+  onPressed: _deleteAccount,
+)
+
+### AppTextField
+AppTextField(controller: _controller, label: '이메일', validator: _validate)
+AppTextField(
+  controller: _emailController,
+  label: '이메일',
+  keyboardType: TextInputType.emailAddress,
+  validator: _validateEmail,
+  prefixIcon: const Icon(Icons.email_outlined),
+)
+
+### EmptyView
+EmptyView(title: '데이터 없음', description: '설명', icon: Icons.inbox)
+EmptyView(
+  title: '알림이 없어요',
+  description: '새로운 알림이 오면 여기에 표시돼요',
+  icon: Icons.notifications_none_rounded,
+)
+
+### ErrorView
+ErrorView(message: '오류 메시지', onRetry: () {})
+ErrorView(
+  message: '알림을 불러오지 못했어요',
+  onRetry: () => ref.read(notificationsProvider.notifier).loadNotifications(),
+)
+
+### LoadingView
+LoadingView(message: '불러오는 중...')
+
+### ConfirmDialog
+final confirm = await ConfirmDialog.show(context,
+  title: '삭제', content: '삭제할까요?', isDanger: true);
+final confirm = await ConfirmDialog.show(
+  context,
+  title: '회원탈퇴',
+  content: '정말 탈퇴하시겠어요?\n모든 데이터가 삭제되며 복구할 수 없어요.',
+  confirmLabel: '탈퇴하기',
+  isDanger: true,
+);
+
+### AppSnackBar
+AppSnackBar.show(context, message: '성공!', type: SnackBarType.success)
+AppSnackBar.show(context, message: '실패!', type: SnackBarType.error)

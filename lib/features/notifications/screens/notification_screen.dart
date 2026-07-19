@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/notifications_provider.dart';
+import '../../../core/widgets/empty_view.dart';
+import '../../../core/widgets/loading_view.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({super.key});
@@ -11,17 +13,34 @@ class NotificationScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationScreenState extends ConsumerState<NotificationScreen> {
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     Future.microtask(
       () => ref.read(notificationsProvider.notifier).loadNotifications(),
     );
+
+    // 스크롤 맨 아래 감지
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        ref.read(notificationsProvider.notifier).loadMore();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose(); // ③ 메모리 해제
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final notifications = ref.watch(notificationsProvider);
+    final notifier = ref.read(notificationsProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -36,10 +55,32 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         ],
       ),
       body: notifications.isEmpty
-          ? const Center(child: Text('알림이 없어요'))
+          ? const EmptyView(
+              title: '알림이 없어요',
+              description: '새로운 알림이 오면 여기에 표시돼요',
+              icon: Icons.notifications_none_rounded,
+            )
           : ListView.builder(
-              itemCount: notifications.length,
+              controller: _scrollController,
+              itemCount: notifications.length + 1, // 로딩 인디케이터를 위해 +1
               itemBuilder: (context, index) {
+                // ⑥ 맨 아래 로딩 인디케이터
+                if (index == notifications.length) {
+                  return notifier.hasMore
+                      ? const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: LoadingView(),
+                        )
+                      : const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(
+                            child: Text(
+                              '모든 알림을 불러왔어요',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        );
+                }
                 final notification = notifications[index];
                 final isRead = notification['is_read'] as bool;
 
@@ -85,10 +126,15 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                           .markAsRead(notification['id'] as String);
                     }
 
+                    final type = notification['type'] as String;
                     final data = notification['data'] as Map<String, dynamic>?;
                     final route = data?['route'] as String?;
 
-                    if (route != null && context.mounted) {
+                    if (type == 'system' || route == null) return;
+
+                    if (route == '/notifications') return;
+
+                    if (context.mounted) {
                       context.push(route);
                     }
                   },

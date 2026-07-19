@@ -76,6 +76,8 @@ dev_dependencies:
 flutter:
   assets:
     - .env
+    - .env.dev
+    - .env.prod
     - assets/icon/
     - assets/splash/
 

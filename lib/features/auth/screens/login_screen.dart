@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pt/features/auth/providers/auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/profile_provider.dart';
 import '../../../core/services/fcm_service.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/app_snack_bar.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -80,38 +83,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           key: _formKey,
           child: Column(
             children: [
-              TextFormField(
+              AppTextField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: '이메일'),
+                label: '이메일',
                 keyboardType: TextInputType.emailAddress,
                 validator: _validateEmail,
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              AppTextField(
                 controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: '비밀번호',
-                  suffixIcon: IconButton(
-                    // ← 보기/숨기기 버튼 추가
-                    icon: Icon(
-                      _passwordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () =>
-                        setState(() => _passwordVisible = !_passwordVisible),
+                label: '비밀번호',
+                obscureText: !_passwordVisible,
+                validator: _validatePassword,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
                   ),
+                  onPressed: () =>
+                      setState(() => _passwordVisible = !_passwordVisible),
                 ),
-                obscureText: !_passwordVisible, // ← true → !_passwordVisible
-                validator: _validatePassword, // ← 추가
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: isLoading ? null : _signIn,
-                child: isLoading
-                    ? CircularProgressIndicator()
-                    : const Text('로그인'),
-              ),
+              AppButton(label: '로그인', isLoading: isLoading, onPressed: _signIn),
               TextButton(
                 onPressed: () => context.push('/signup'),
                 child: const Text('회원가입 하기'),
@@ -146,8 +139,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   } else {
                     final error = ref.read(authProvider).error;
                     if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(error ?? '구글 로그인 실패')),
+                    AppSnackBar.show(
+                      context,
+                      message: error ?? '로그인 실패',
+                      type: SnackBarType.error,
                     );
                   }
                 },

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_pt/core/app_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -34,7 +35,6 @@ void main() async {
       final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
       FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-      // Flutter 에러 전역 캐치
       FlutterError.onError = (FlutterErrorDetails details) {
         FlutterError.presentError(details);
         logger.e(
@@ -42,22 +42,38 @@ void main() async {
           error: details.exception,
           stackTrace: details.stack,
         );
-        FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+        // ① 프로덕션에서만 Crashlytics
+        if (AppConfig.enableCrashlytics) {
+          FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+        }
       };
 
-      // 릴리즈 모드에서 에러 캐치
       PlatformDispatcher.instance.onError = (error, stack) {
         logger.e('PlatformDispatcher Error', error: error, stackTrace: stack);
+        if (AppConfig.enableCrashlytics) {
+          FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        }
         return true;
       };
 
-      await dotenv.load(fileName: '.env');
+      // ② 환경별 .env 로드
+      await dotenv.load(fileName: AppConfig.envFile);
 
       try {
         await Firebase.initializeApp();
         FirebaseMessaging.onBackgroundMessage(
           _firebaseMessagingBackgroundHandler,
         );
+        // ③ 프로덕션에서만 Crashlytics 활성화
+        if (AppConfig.enableCrashlytics) {
+          await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+            true,
+          );
+        } else {
+          await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+            false,
+          );
+        }
       } catch (e) {
         logger.w('Firebase 초기화 실패: $e');
       }
@@ -71,9 +87,10 @@ void main() async {
       runApp(const ProviderScope(child: MyApp()));
     },
     (error, stack) {
-      // 비동기 에러 전역 캐치
       logger.e('ZonedGuarded Error', error: error, stackTrace: stack);
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      if (AppConfig.enableCrashlytics) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      }
     },
   );
 }
@@ -93,7 +110,6 @@ class _MyAppState extends ConsumerState<MyApp> {
     super.initState();
     _authService.listenAuthState(
       onSignedOut: () {
-        // 세션 만료 시 상태 초기화 + 로그인 화면으로
         ref.read(profileProvider.notifier).clear();
         ref.read(notificationsProvider.notifier).clear();
         router.go('/login');
@@ -112,7 +128,8 @@ class _MyAppState extends ConsumerState<MyApp> {
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
+      // ④ 개발 환경에서만 디버그 배너
+      debugShowCheckedModeBanner: AppConfig.isDev,
       routerConfig: router,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),

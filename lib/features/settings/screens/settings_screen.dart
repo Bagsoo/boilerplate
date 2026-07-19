@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:flutter_pt/features/auth/providers/auth_provider.dart';
-import 'package:flutter_pt/features/profile/providers/profile_provider.dart';
-import 'package:flutter_pt/features/settings/providers/theme_provider.dart';
-import 'package:flutter_pt/features/notifications/providers/notifications_provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../features/auth/providers/auth_provider.dart';
+import '../../../features/profile/providers/profile_provider.dart';
+import '../../../features/settings/providers/theme_provider.dart';
+import '../../../features/notifications/providers/notifications_provider.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/confirm_dialog.dart';
+import '../../../core/widgets/app_snack_bar.dart';
 import '../../../core/widgets/avatar_image.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -36,6 +39,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
     final profile = ref.watch(profileProvider);
+
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -47,21 +51,26 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 8),
           const Text('탭하여 이미지 변경'),
           const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: themeMode == ThemeMode.dark
-                ? null
-                : () => ref.read(themeProvider.notifier).setDark(),
-            child: const Text('다크모드'),
+          SwitchListTile(
+            title: const Text('다크모드'),
+            secondary: Icon(
+              themeMode == ThemeMode.dark
+                  ? Icons.dark_mode
+                  : Icons.light_mode_outlined,
+            ),
+            value: themeMode == ThemeMode.dark,
+            onChanged: (value) {
+              if (value) {
+                ref.read(themeProvider.notifier).setDark();
+              } else {
+                ref.read(themeProvider.notifier).setLight();
+              }
+            },
           ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: themeMode == ThemeMode.light
-                ? null
-                : () => ref.read(themeProvider.notifier).setLight(),
-            child: const Text('라이트모드'),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
+          AppButton(
+            label: '로그아웃',
+            type: AppButtonType.secondary,
+            icon: Icons.logout,
             onPressed: () async {
               await ref.read(authProvider.notifier).signOut();
               ref.read(profileProvider.notifier).clear();
@@ -69,19 +78,15 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
               if (!mounted) return;
               context.go('/login');
             },
-            icon: const Icon(Icons.logout),
-            label: const Text('로그아웃'),
           ),
           const SizedBox(height: 16),
-          ElevatedButton.icon(
+          AppButton(
+            label: '회원탈퇴',
+            type: AppButtonType.danger,
+            icon: Icons.person_remove_outlined,
             onPressed: () => _deleteAccount(context, ref),
-            icon: const Icon(Icons.person_remove),
-            label: const Text('회원탈퇴'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
           ),
+
           const Spacer(),
           Text(
             '버전 $_version',
@@ -95,23 +100,12 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
 
   Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
     // ① 확인 다이얼로그
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('회원탈퇴'),
-        content: const Text('정말 탈퇴하시겠어요?\n모든 데이터가 삭제되며 복구할 수 없어요.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false), // 취소
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true), // 확인
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('탈퇴하기'),
-          ),
-        ],
-      ),
+    final confirm = await ConfirmDialog.show(
+      context,
+      title: '회원탈퇴',
+      content: '정말 탈퇴하시겠어요?\n모든 데이터가 삭제되며 복구할 수 없어요.',
+      confirmLabel: '탈퇴하기',
+      isDanger: true,
     );
 
     if (confirm != true) return; // 취소 누르면 종료
@@ -126,9 +120,11 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
     } else {
       final error = ref.read(authProvider).error;
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
+      AppSnackBar.show(
         context,
-      ).showSnackBar(SnackBar(content: Text(error ?? '탈퇴 실패')));
+        message: error ?? '탈퇴 실패',
+        type: SnackBarType.error,
+      );
     }
   }
 }
