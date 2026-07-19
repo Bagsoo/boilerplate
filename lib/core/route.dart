@@ -1,6 +1,8 @@
-import 'package:flutter_pt/core/services/fcm_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/services/fcm_service.dart';
+import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/signup_screen.dart';
 import '../home/screens/home_screen.dart';
@@ -15,7 +17,15 @@ final router = GoRouter(
   initialLocation: '/home',
   debugLogDiagnostics: true, // 딥링크 디버깅용
 
-  redirect: (context, state) {
+  redirect: (context, state) async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+    // 온보딩 안 봤으면 온보딩으로
+    if (!hasSeenOnboarding && state.matchedLocation != '/onboarding') {
+      return '/onboarding';
+    }
+
     final session = Supabase.instance.client.auth.currentSession;
     final isLoggedIn = session != null;
     final isAuthRoute =
@@ -40,6 +50,10 @@ final router = GoRouter(
     GoRoute(
       path: '/notifications',
       builder: (context, state) => const NotificationScreen(),
+    ),
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const OnboardingScreen(),
     ),
 
     StatefulShellRoute.indexedStack(

@@ -39,6 +39,7 @@ flutter build ipa -t lib/main_prod.dart
   - 설정스크린에 앱 버전 감지 후 노출
   - notifications_screen 페이지(10)네이션
   - 공통위젯 사용법 맨 아래
+   - 온보딩 화면 (3페이지, 이미지/문구만 교체)
 ✅ 기능
   - 프로필 이미지 업로드 (Supabase Storage)
   - FCM 푸시 알림
@@ -65,6 +66,12 @@ flutter build ipa -t lib/main_prod.dart
   - runZonedGuarded
   - Firebase Crashlytics
 ✅ 인터넷 연결 상태 감지
+✅ 환경 분리
+  - main_dev.dart / main_prod.dart
+  - .env.dev / .env.prod
+  - AppConfig (isDev/isProd)
+  - 개발: Crashlytics 비활성화
+  - 프로덕션: Crashlytics 활성화
 
 1. 패키지명 변경
 2. 앱 이름 변경
@@ -77,7 +84,8 @@ flutter build ipa -t lib/main_prod.dart
 9. 푸시 알림 설정
 10. 브랜드 컬러 변경
 11. 앱 아이콘/스플래시 이미지 교체
-12. Crashlytics 설정
+12. 온보딩 설정
+13. Crashlytics 설정
 
 ##########################################################################
 # boiler plate 사용법
@@ -266,6 +274,43 @@ logger.e('에러: 로그인 실패',          // 🚨 error
   error: e,
   stackTrace: st,
 );
+
+## 온보딩 #############
+assets/onboarding/ 폴더에 이미지 3장 교체:
+  - onboarding_1.png
+  - onboarding_2.png  
+  - onboarding_3.png
+
+lib/features/onboarding/screens/onboarding_screen.dart에서
+제목/설명 교체:
+
+final _pages = const [
+  OnboardingItem(
+    image: 'assets/onboarding/onboarding_1.png',
+    title: '여기에 제목',           ← 교체
+    description: '여기에 설명',     ← 교체
+  ),
+  ...
+];
+
+SharedPreferences에 'hasSeenOnboarding' 키로 저장됨.
+앱 첫 실행 시 온보딩 → 이후 실행 시 스킵.
+
+## 앱 흐름
+Splash
+  ↓
+온보딩 (첫 실행만)
+  ↓
+로그인
+  ↓
+홈
+
+온보딩 초기화 (개발용)
+온보딩을 다시 보고 싶을 때:
+final prefs = await SharedPreferences.getInstance();
+await prefs.remove('hasSeenOnboarding');
+온보딩 페이지 늘릴 때 _page 리스트에 OnboardingItem 하나만 추가하고, assets/onboarding/onboarding_4.png 넣으면됨
+#####################################
 
 ## Crashlytics 설정
 Firebase Console → Crashlytics 활성화
