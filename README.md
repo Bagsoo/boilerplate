@@ -7,6 +7,7 @@ flutter run -t lib/main_prod.dart
 
 # 빌드
 flutter build apk -t lib/main_prod.dart
+flutter build appbundle --release -t lib/main_prod.dart
 flutter build ipa -t lib/main_prod.dart
 
 # 현재 완료된 보일러플레이트
