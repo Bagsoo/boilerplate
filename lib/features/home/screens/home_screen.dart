@@ -26,7 +26,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final profile = ref.watch(profileProvider);
 
     return Center(
-      // ← Scaffold 제거, AppBar 제거
       child: profile == null
           ? const CircularProgressIndicator()
           : Text('안녕하세요, ${profile.nickname}님!'),

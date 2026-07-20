@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../features/notifications/providers/notifications_provider.dart';
+import 'widgets/app_search_bar.dart';
 
 class ScaffoldWithNav extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -25,10 +26,19 @@ class _ScaffoldWithNavState extends ConsumerState<ScaffoldWithNav> {
   Widget build(BuildContext context) {
     final unreadCount = ref.watch(unreadCountProvider);
     final titles = ['홈', '프로필', '설정'];
+    final location = GoRouterState.of(context).matchedLocation;
+    final isHome = location.startsWith('/home');
+    final isProfile = location.startsWith('/profile');
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(titles[widget.navigationShell.currentIndex]),
+        title: isHome
+            ? GestureDetector(
+                // ← 홈일 때 검색바
+                onTap: () => context.push('/search'),
+                child: AppSearchBar(hint: '검색'),
+              )
+            : Text(titles[widget.navigationShell.currentIndex]),
         actions: [
           Stack(
             children: [
@@ -58,6 +68,11 @@ class _ScaffoldWithNavState extends ConsumerState<ScaffoldWithNav> {
                 ),
             ],
           ),
+          if (isProfile)
+            IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () => context.push('/settings'),
+            ),
         ],
       ),
       body: widget.navigationShell,
@@ -67,7 +82,6 @@ class _ScaffoldWithNavState extends ConsumerState<ScaffoldWithNav> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: '프로필'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
         ],
       ),
     );

@@ -10,6 +10,7 @@ import '../features/settings/screens/settings_screen.dart';
 import '../features/auth/screens/terms_screen.dart';
 import '../features/notifications/screens/notification_screen.dart';
 import '../features/home/screens/home_screen.dart';
+import '../features/search/screens/search_screen.dart';
 import 'scaffold_with_nav.dart';
 
 final router = GoRouter(
@@ -55,6 +56,11 @@ final router = GoRouter(
       path: '/onboarding',
       builder: (context, state) => const OnboardingScreen(),
     ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(path: '/search', builder: (context, state) => const SearchScreen()),
 
     StatefulShellRoute.indexedStack(
       // ① 탭 묶음 라우트
@@ -77,15 +83,6 @@ final router = GoRouter(
             GoRoute(
               path: '/profile',
               builder: (context, state) => const ProfileScreen(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          // ④ 탭3 - 설정
-          routes: [
-            GoRoute(
-              path: '/settings',
-              builder: (context, state) => const SettingsScreen(),
             ),
           ],
         ),

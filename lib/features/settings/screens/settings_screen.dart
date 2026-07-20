@@ -40,60 +40,63 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
     final themeMode = ref.watch(themeProvider);
     final profile = ref.watch(profileProvider);
 
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: () => ref.read(profileProvider.notifier).uploadAvatar(),
-            child: AvatarImage(radius: 50, imageUrl: profile?.profileImage),
-          ),
-          const SizedBox(height: 8),
-          const Text('탭하여 이미지 변경'),
-          const SizedBox(height: 32),
-          SwitchListTile(
-            title: const Text('다크모드'),
-            secondary: Icon(
-              themeMode == ThemeMode.dark
-                  ? Icons.dark_mode
-                  : Icons.light_mode_outlined,
+    return Scaffold(
+      appBar: AppBar(title: const Text('설정')),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap: () => ref.read(profileProvider.notifier).uploadAvatar(),
+              child: AvatarImage(radius: 50, imageUrl: profile?.profileImage),
             ),
-            value: themeMode == ThemeMode.dark,
-            onChanged: (value) {
-              if (value) {
-                ref.read(themeProvider.notifier).setDark();
-              } else {
-                ref.read(themeProvider.notifier).setLight();
-              }
-            },
-          ),
-          AppButton(
-            label: '로그아웃',
-            type: AppButtonType.secondary,
-            icon: Icons.logout,
-            onPressed: () async {
-              await ref.read(authProvider.notifier).signOut();
-              ref.read(profileProvider.notifier).clear();
-              ref.read(notificationsProvider.notifier).clear();
-              if (!mounted) return;
-              context.go('/login');
-            },
-          ),
-          const SizedBox(height: 16),
-          AppButton(
-            label: '회원탈퇴',
-            type: AppButtonType.danger,
-            icon: Icons.person_remove_outlined,
-            onPressed: () => _deleteAccount(context, ref),
-          ),
+            const SizedBox(height: 8),
+            const Text('탭하여 이미지 변경'),
+            const SizedBox(height: 32),
+            SwitchListTile(
+              title: const Text('다크모드'),
+              secondary: Icon(
+                themeMode == ThemeMode.dark
+                    ? Icons.dark_mode
+                    : Icons.light_mode_outlined,
+              ),
+              value: themeMode == ThemeMode.dark,
+              onChanged: (value) {
+                if (value) {
+                  ref.read(themeProvider.notifier).setDark();
+                } else {
+                  ref.read(themeProvider.notifier).setLight();
+                }
+              },
+            ),
+            AppButton(
+              label: '로그아웃',
+              type: AppButtonType.secondary,
+              icon: Icons.logout,
+              onPressed: () async {
+                await ref.read(authProvider.notifier).signOut();
+                ref.read(profileProvider.notifier).clear();
+                ref.read(notificationsProvider.notifier).clear();
+                if (!mounted) return;
+                context.go('/login');
+              },
+            ),
+            const SizedBox(height: 16),
+            AppButton(
+              label: '회원탈퇴',
+              type: AppButtonType.danger,
+              icon: Icons.person_remove_outlined,
+              onPressed: () => _deleteAccount(context, ref),
+            ),
 
-          const Spacer(),
-          Text(
-            '버전 $_version',
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
-          ),
-          const SizedBox(height: 16),
-        ],
+            const Spacer(),
+            Text(
+              '버전 $_version',
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

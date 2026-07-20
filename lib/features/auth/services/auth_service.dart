@@ -9,6 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import '../../profile/services/profile_service.dart';
 import '../../../core/services/fcm_service.dart';
+import '../../../core/logger.dart';
 
 class AuthService {
   final _client = Supabase.instance.client;
@@ -19,9 +20,19 @@ class AuthService {
     _authSubscription = _client.auth.onAuthStateChange.listen((data) {
       final event = data.event;
 
-      if (event == AuthChangeEvent.signedOut ||
-          event == AuthChangeEvent.tokenRefreshed && data.session == null) {
-        onSignedOut(); // 세션 만료 시 콜백 호출
+      switch (event) {
+        case AuthChangeEvent.signedOut:
+          onSignedOut();
+          break;
+        case AuthChangeEvent.tokenRefreshed:
+          // 토큰 갱신 성공 → 아무것도 안 해도 됨
+          logger.i('토큰 갱신 성공');
+          break;
+        case AuthChangeEvent.signedIn:
+          logger.i('로그인 감지');
+          break;
+        default:
+          break;
       }
     });
   }

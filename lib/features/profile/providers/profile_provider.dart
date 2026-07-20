@@ -26,7 +26,21 @@ class ProfileNotifier extends Notifier<ProfileModel?> {
 
       state = ProfileModel.fromMap(data, user.email!);
     } catch (e) {
-      logger.e('loadProfile 에러', error: e);
+      if (e.toString().contains('JWT expired')) {
+        try {
+          await _client.auth.refreshSession(); // ← 토큰 갱신
+          final data = await _client
+              .from('profiles')
+              .select()
+              .eq('id', user.id)
+              .single();
+          state = ProfileModel.fromMap(data, user.email!);
+        } catch (retryError) {
+          logger.e('loadProfile 재시도 실패', error: retryError);
+        }
+      } else {
+        logger.e('loadProfile 에러', error: e);
+      }
     }
   }
 

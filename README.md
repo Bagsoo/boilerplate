@@ -72,6 +72,11 @@ flutter build ipa -t lib/main_prod.dart
   - AppConfig (isDev/isProd)
   - 개발: Crashlytics 비활성화
   - 프로덕션: Crashlytics 활성화
+✅ 검색
+  - 앱바 검색바 (홈 탭)
+  - 검색 스크린 (자동 포커스)
+  - 최근 검색어 (가로 슬라이드, SP 저장, 개별/전체 삭제)
+  - 더미 검색 결과 (실제 앱에서 Supabase 쿼리로 교체해야함)
 
 1. 패키지명 변경
 2. 앱 이름 변경
@@ -86,6 +91,7 @@ flutter build ipa -t lib/main_prod.dart
 11. 앱 아이콘/스플래시 이미지 교체
 12. 온보딩 설정
 13. Crashlytics 설정
+14. 검색 커스터마이징
 
 ##########################################################################
 # boiler plate 사용법
@@ -317,7 +323,11 @@ Firebase Console → Crashlytics 활성화
 별도 설정 없이 firebase_crashlytics 패키지만 있으면 자동 수집
 테스트: FirebaseCrashlytics.instance.crash() 호출
 
-## 공통 위젯
+## 검색 커스터마이징
+lib/features/search/screens/search_screen.dart에서
+_dummyData 리스트를 실제 Supabase 쿼리로 교체하면 됨
+
+## 공통 위젯 사용법
 
 ### AppButton
 AppButton(label: '확인', onPressed: () {}, isLoading: false)
