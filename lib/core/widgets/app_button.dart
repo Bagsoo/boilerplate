@@ -92,7 +92,7 @@ class AppButton extends StatelessWidget {
       case AppButtonType.danger:
         return (const Color(0xFFEF4444), Colors.white);
       case AppButtonType.ghost:
-        return (theme.colorScheme.primary, theme.colorScheme.primary);
+        return (theme.colorScheme.primary, Colors.grey);
     }
   }
 }

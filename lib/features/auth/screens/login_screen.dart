@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_pt/features/auth/repositories/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -58,9 +59,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } else {
       final error = ref.read(authProvider).error;
       if (!mounted) return;
-      ScaffoldMessenger.of(
+      AppSnackBar.show(
         context,
-      ).showSnackBar(SnackBar(content: Text(error ?? '로그인 실패')));
+        message: error ?? '로그인 실패',
+        type: SnackBarType.error,
+      );
     }
   }
 
@@ -119,18 +122,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   if (success) {
                     final userId =
                         Supabase.instance.client.auth.currentUser!.id;
-                    final profile = await Supabase.instance.client
-                        .from('profiles')
-                        .select('terms_agreed_at')
-                        .eq('id', userId)
-                        .single();
-
+                    final repository = ref.read(authRepositoryProvider);
+                    final hasAgreed = await repository.hasAgreedToTerms(userId);
                     if (!mounted) return;
-                    if (profile['terms_agreed_at'] == null) {
+
+                    if (!hasAgreed) {
                       context.push(
                         '/terms',
-                        extra: {'from': 'google'},
-                      ); // 처음 가입
+                        extra: <String, dynamic>{'from': 'google'},
+                      );
                     } else {
                       await ref.read(profileProvider.notifier).loadProfile();
                       if (!mounted) return;
@@ -159,30 +159,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     // 약관 동의 여부 확인
                     final userId =
                         Supabase.instance.client.auth.currentUser!.id;
-                    final profile = await Supabase.instance.client
-                        .from('profiles')
-                        .select('terms_agreed_at')
-                        .eq('id', userId)
-                        .single();
+                    final repository = ref.read(authRepositoryProvider);
+                    final hasAgreed = await repository.hasAgreedToTerms(userId);
 
-                    if (!mounted) return;
-
-                    if (profile['terms_agreed_at'] == null) {
+                    if (!hasAgreed) {
                       context.push(
                         '/terms',
                         extra: <String, dynamic>{'from': 'apple'},
                       );
                     } else {
                       await ref.read(profileProvider.notifier).loadProfile();
-                      await FcmService().initialize();
                       if (!mounted) return;
                       context.go('/home');
                     }
                   } else {
                     final error = ref.read(authProvider).error;
                     if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(error ?? '애플 로그인 실패')),
+                    AppSnackBar.show(
+                      context,
+                      message: error ?? '애플 로그인 실패',
+                      type: SnackBarType.error,
                     );
                   }
                 },

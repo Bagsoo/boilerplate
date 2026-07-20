@@ -1,64 +1,45 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../repositories/notifications_repository.dart';
 
 class NotificationsNotifier extends Notifier<List<Map<String, dynamic>>> {
-  final _client = Supabase.instance.client;
-
-  static const _pageSize = 10; // ① 한 번에 로드할 개수
-  bool _hasMore = true; // ② 더 불러올 데이터 있는지
-  bool _isLoadingMore = false; // ③ 추가 로딩 중인지
+  static const _pageSize = 10;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
 
   bool get hasMore => _hasMore;
   bool get isLoadingMore => _isLoadingMore;
 
   @override
-  List<Map<String, dynamic>> build() => []; // 초기값
+  List<Map<String, dynamic>> build() => [];
+
+  late final _repository = ref.read(notificationsRepositoryProvider);
 
   Future<void> loadNotifications() async {
-    final user = _client.auth.currentUser;
-    if (user == null) return;
-
     _hasMore = true;
 
-    final data = await _client
-        .from('notifications')
-        .select()
-        .eq('receiver_id', user.id)
-        .order('created_at', ascending: false)
-        .limit(_pageSize);
+    final data = await _repository.getNotifications(from: 0, to: _pageSize - 1);
 
-    state = List<Map<String, dynamic>>.from(data);
-    _hasMore = data.length == _pageSize; // 10개 미만이면 더 없음
+    state = data;
+    _hasMore = data.length == _pageSize;
   }
 
-  // 추가 로드 (무한 스크롤)
   Future<void> loadMore() async {
-    if (!_hasMore || _isLoadingMore) return; // 중복 호출 방지
-
-    final user = _client.auth.currentUser;
-    if (user == null) return;
+    if (!_hasMore || _isLoadingMore) return;
 
     _isLoadingMore = true;
 
-    final data = await _client
-        .from('notifications')
-        .select()
-        .eq('receiver_id', user.id)
-        .order('created_at', ascending: false)
-        .range(state.length, state.length + _pageSize - 1); // 이어서 로드
+    final data = await _repository.getNotifications(
+      from: state.length,
+      to: state.length + _pageSize - 1,
+    );
 
     _isLoadingMore = false;
     _hasMore = data.length == _pageSize;
-    state = [...state, ...List<Map<String, dynamic>>.from(data)]; // 기존에 추가
+    state = [...state, ...data];
   }
 
-  int get unreadCount => state.where((n) => n['is_read'] == false).length;
-
   Future<void> markAsRead(String notificationId) async {
-    await _client
-        .from('notifications')
-        .update({'is_read': true})
-        .eq('id', notificationId);
+    await _repository.markAsRead(notificationId);
 
     state = state.map((n) {
       if (n['id'] == notificationId) {
@@ -69,15 +50,7 @@ class NotificationsNotifier extends Notifier<List<Map<String, dynamic>>> {
   }
 
   Future<void> markAllAsRead() async {
-    final user = _client.auth.currentUser;
-    if (user == null) return;
-
-    await _client
-        .from('notifications')
-        .update({'is_read': true})
-        .eq('receiver_id', user.id)
-        .eq('is_read', false);
-
+    await _repository.markAllAsRead();
     state = state.map((n) => {...n, 'is_read': true}).toList();
   }
 
@@ -85,7 +58,11 @@ class NotificationsNotifier extends Notifier<List<Map<String, dynamic>>> {
 }
 
 final notificationsProvider =
-    NotifierProvider<NotificationsNotifier, List<Map<String, dynamic>>>(() {
+    NotifierProvider<
+      // ← < 추가
+      NotificationsNotifier,
+      List<Map<String, dynamic>>
+    >(() {
       return NotificationsNotifier();
     });
 

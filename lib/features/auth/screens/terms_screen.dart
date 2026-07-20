@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/profile_provider.dart';
 import '../../../core/services/fcm_service.dart';
+import '../../../features/profile/repositories/profile_repository.dart';
 
 class TermsScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> extra;
@@ -24,11 +25,8 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
   String get _from => widget.extra['from'] as String;
 
   Future<void> _saveAgreedAt(String userId) async {
-    final now = DateTime.now().toUtc().toIso8601String();
-    await Supabase.instance.client
-        .from('profiles')
-        .update({'terms_agreed_at': now, 'privacy_agreed_at': now})
-        .eq('id', userId);
+    final repository = ProfileRepository();
+    await repository.saveAgreedAt(userId);
   }
 
   Future<void> _agree() async {

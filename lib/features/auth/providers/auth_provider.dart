@@ -1,8 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/auth_service.dart';
+import '../repositories/auth_repository.dart';
 
-// 인증상태를 나타내는 클래스
 class AuthState {
   final bool isLoading;
   final String? error;
@@ -18,14 +17,13 @@ class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() => const AuthState();
 
-  final _authService = AuthService();
+  // ① Service 대신 Repository 사용
+  late final _repository = ref.read(authRepositoryProvider);
 
-  // 로그인
   Future<bool> signIn({required String email, required String password}) async {
-    state = state.copyWith(isLoading: true); // 로딩 시작
-
+    state = state.copyWith(isLoading: true);
     try {
-      final response = await _authService.signIn(
+      final response = await _repository.signIn(
         email: email,
         password: password,
       );
@@ -38,12 +36,10 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  // 구글 로그인
   Future<bool> signInWithGoogle() async {
     state = state.copyWith(isLoading: true);
-
     try {
-      final response = await _authService.signInWithGoogle();
+      final response = await _repository.signInWithGoogle();
       return response.user != null;
     } catch (e) {
       state = state.copyWith(error: e.toString());
@@ -53,12 +49,10 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  // 애플 로그인
   Future<bool> signInWithApple() async {
     state = state.copyWith(isLoading: true);
-
     try {
-      final response = await _authService.signInWithApple();
+      final response = await _repository.signInWithApple();
       return response.user != null;
     } catch (e) {
       state = state.copyWith(error: e.toString());
@@ -74,19 +68,38 @@ class AuthNotifier extends Notifier<AuthState> {
     required String nickname,
   }) async {
     state = state.copyWith(isLoading: true);
-
     try {
-      final response = await _authService.signUp(
+      final response = await _repository.signUp(
         email: email,
         password: password,
         nickname: nickname,
       );
       return response.user != null;
     } on AuthException catch (e) {
-      state = state.copyWith(
-        error: _translateError(e.message),
-      ); // throw 대신 state에 저장
+      state = state.copyWith(error: _translateError(e.message));
       return false;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  Future<void> signOut() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      await _repository.signOut();
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  Future<bool> deleteAccount() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      await _repository.deleteAccount();
+      return true;
     } catch (e) {
       state = state.copyWith(error: e.toString());
       return false;
@@ -103,36 +116,7 @@ class AuthNotifier extends Notifier<AuthState> {
     return message;
   }
 
-  // 로그아웃
-  Future<void> signOut() async {
-    state = state.copyWith(isLoading: true);
-
-    try {
-      await _authService.signOut();
-    } finally {
-      state = state.copyWith(isLoading: false);
-    }
-  }
-
-  // 회원 탈퇴
-  Future<bool> deleteAccount() async {
-    state = state.copyWith(isLoading: true);
-
-    try {
-      await _authService.deleteAccount();
-      return true;
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
-      return false;
-    } finally {
-      state = state.copyWith(isLoading: false);
-    }
-  }
-
-  // 에러 초기화
-  void clearError() {
-    state = state.copyWith(error: null);
-  }
+  void clearError() => state = state.copyWith(error: null);
 }
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {
