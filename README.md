@@ -245,6 +245,21 @@ Headers:
 
 + supabase/functions/send-push-notification/index.ts의
   project_id가 Firebase 프로젝트 ID와 일치하는지 확인
+
+7. DB Webhook 설정 (푸시 알림)
+Supabase 대시보드 → Database → Webhooks → Create webhook
+
+Name: on_notification_insert
+Table: public.notifications
+Events: INSERT ✅
+Type: HTTP Request
+URL: https://<your-project-ref>.supabase.co/functions/v1/send-push-notification
+Headers:
+  Authorization: Bearer <service_role_key>
+  Content-Type: application/json
+
+⚠️ service_role_key는 Supabase 대시보드 → Settings → API → service_role 에서 확인
+⚠️ 웹훅 설정 안 하면 푸시 알림이 전송되지 않음
 #######################################
 
 ## 패키지명 변경 시 추가 작업
@@ -330,7 +345,7 @@ lib/features/search/screens/search_screen.dart에서
 _dummyData 리스트를 실제 Supabase 쿼리로 교체하면 됨
 
 ## 아키텍처 ################################
-### 레이어 구조
+1. 레이어 구조
 Screen (UI)
    ↓
 Provider (Notifier) — 상태 관리
@@ -339,7 +354,7 @@ Repository — 비즈니스 로직
    ↓
 Service — Supabase/외부 API 직접 호출
 
-### Repository 목록
+2. Repository 목록
 lib/features/auth/repositories/auth_repository.dart
   - signIn / signUp / signOut
   - signInWithGoogle / signInWithApple
@@ -357,7 +372,7 @@ lib/features/notifications/repositories/notifications_repository.dart
   - markAsRead / markAllAsRead
   - sendNotification (RPC)
 
-### 새 기능 추가 시
+3. 새 기능 추가 시
 Repository에 메서드 추가
    ↓
 Provider에서 Repository 호출
