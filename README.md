@@ -392,7 +392,7 @@ Screen에서 Provider 호출
 
 ## 공통 위젯 사용법
 
-### AppButton
+1. AppButton
 AppButton(label: '확인', onPressed: () {}, isLoading: false)
 AppButton(label: '삭제', type: AppButtonType.danger, onPressed: () {})
 AppButton(label: '취소', type: AppButtonType.ghost, onPressed: () {})
@@ -408,7 +408,7 @@ AppButton(
   onPressed: _deleteAccount,
 )
 
-### AppTextField
+2. AppTextField
 AppTextField(controller: _controller, label: '이메일', validator: _validate)
 AppTextField(
   controller: _emailController,
@@ -418,7 +418,7 @@ AppTextField(
   prefixIcon: const Icon(Icons.email_outlined),
 )
 
-### EmptyView
+3. EmptyView
 EmptyView(title: '데이터 없음', description: '설명', icon: Icons.inbox)
 EmptyView(
   title: '알림이 없어요',
@@ -426,17 +426,17 @@ EmptyView(
   icon: Icons.notifications_none_rounded,
 )
 
-### ErrorView
+4. ErrorView
 ErrorView(message: '오류 메시지', onRetry: () {})
 ErrorView(
   message: '알림을 불러오지 못했어요',
   onRetry: () => ref.read(notificationsProvider.notifier).loadNotifications(),
 )
 
-### LoadingView
+5. LoadingView
 LoadingView(message: '불러오는 중...')
 
-### ConfirmDialog
+6. ConfirmDialog
 final confirm = await ConfirmDialog.show(context,
   title: '삭제', content: '삭제할까요?', isDanger: true);
 final confirm = await ConfirmDialog.show(
@@ -447,6 +447,29 @@ final confirm = await ConfirmDialog.show(
   isDanger: true,
 );
 
-### AppSnackBar
+7. AppSnackBar
 AppSnackBar.show(context, message: '성공!', type: SnackBarType.success)
 AppSnackBar.show(context, message: '실패!', type: SnackBarType.error)
+
+8. AppSearchBar
+// 홈 앱바에 배치 (터치하면 검색 스크린으로 이동)
+AppSearchBar(
+  hint: '검색어를 입력하세요',
+  onTap: () => context.push('/search'),
+)
+// 커스텀 힌트
+AppSearchBar(
+  hint: '상품을 검색해보세요',
+  onTap: () => context.push('/search'),
+)
+
+8-1. 검색 커스터마이징
+lib/features/search/screens/search_screen.dart에서 수정:
+
+// 더미 데이터 → 실제 Supabase 쿼리로 교체
+final _dummyData = [
+  '플러터', '다트', ...   ← 여기를 실제 검색 로직으로 교체
+];
+
+// 최근 검색어 최대 개수 변경
+if (_recentSearches.length > 10) {   ← 숫자 변경
