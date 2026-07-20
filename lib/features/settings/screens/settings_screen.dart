@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_pt/core/widgets/app_bottom_sheet.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -47,7 +48,28 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
         child: Column(
           children: [
             GestureDetector(
-              onTap: () => ref.read(profileProvider.notifier).uploadAvatar(),
+              onTap: () async {
+                final result = await AppBottomSheet.showOptions<String>(
+                  context,
+                  title: '프로필 이미지',
+                  options: [
+                    const BottomSheetOption(
+                      label: '갤러리에서 선택',
+                      icon: Icons.photo_library_outlined,
+                      value: 'gallery',
+                    ),
+                    const BottomSheetOption(
+                      label: '이미지 삭제',
+                      icon: Icons.delete_outline,
+                      value: 'delete',
+                      isDestructive: true,
+                    ),
+                  ],
+                );
+                if (result == 'gallery') {
+                  ref.read(profileProvider.notifier).uploadAvatar();
+                }
+              },
               child: AvatarImage(radius: 50, imageUrl: profile?.profileImage),
             ),
             const SizedBox(height: 8),

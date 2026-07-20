@@ -94,6 +94,11 @@ flutter build ipa -t lib/main_prod.dart
 14. 검색 커스터마이징
 15. 아키텍처
 16. 알림 실시간 업데이트 아직 안됨 - 아래 방법 설명 있음
+17. DateFormatter 사용법
+18. ClipboardUtil 사용법
+19. KeyboardDismisser 사용법
+20. UrlUtil
+21. 앱 강제 업데이트
 
 ##########################################################################
 # boiler plate 사용법
@@ -390,6 +395,63 @@ Screen에서 Provider 호출
      → notifications 테이블 변경 감지
      → 복잡도 높음
 
+### DateFormatter
+import 'package:flutter_pt/core/utils/date_formatter.dart';
+
+DateFormatter.timeAgo(dateStr)        // "방금 전", "3분 전", "2일 전"
+DateFormatter.toDate(dateStr)         // "2024.01.15"
+DateFormatter.toDateTime(dateStr)     // "2024.01.15 14:30"
+DateFormatter.toRelativeDate(dateStr) // "오늘", "어제", "2024.01.15"
+
+### ClipboardUtil
+import 'package:flutter_pt/core/utils/clipboard_util.dart';
+
+// 복사 + 성공 스낵바 자동 표시
+ClipboardUtil.copy(context, '복사할 텍스트');
+
+// 커스텀 메시지
+ClipboardUtil.copy(context, profile.email, message: '이메일이 복사되었어요');
+
+### KeyboardDismisser
+// 화면 탭하면 키보드 자동으로 내려감
+// 텍스트필드 있는 화면 body에 감싸주면 됨
+
+body: KeyboardDismisser(
+  child: SingleChildScrollView(...),
+),
+
+### UrlUtil
+import 'package:flutter_pt/core/utils/url_util.dart';
+
+UrlUtil.launch(context, 'https://example.com');
+// 커스텀 에러 메시지
+UrlUtil.launch(context, url, errorMessage: '브라우저를 열 수 없어요');
+
+  ## 이용약관 / 개인정보처리방침 URL 교체
+  lib/features/auth/screens/terms_screen.dart에서 교체:
+
+  1. 이용약관
+  'https://www.google.com'   → 실제 이용약관 URL로 교체
+
+  2. 개인정보처리방침
+  'https://www.naver.com'    → 실제 개인정보처리방침 URL로 교체
+
+## 앱 강제 업데이트
+Supabase Table Editor → app_config 테이블에서 버전 관리:
+
+min_version_android: 1.0.0   ← 최소 버전 변경 시 강제 업데이트
+min_version_ios: 1.0.0
+
+스토어 URL 교체:
+lib/core/services/force_update_service.dart에서
+_androidStoreUrl → 실제 플레이스토어 URL로 교체
+_iosStoreUrl     → 실제 앱스토어 URL로 교체
+
+앱 강제 업데이트가 필요할 때 Supabase Table Editor에서:
+  app_config 테이블
+  min_version_android → 1.1.0 으로 변경
+  min_version_ios     → 1.1.0 으로 변경
+
 ## 공통 위젯 사용법
 
 1. AppButton
@@ -473,3 +535,38 @@ final _dummyData = [
 
 // 최근 검색어 최대 개수 변경
 if (_recentSearches.length > 10) {   ← 숫자 변경
+
+9. AppBottomSheet
+// 기본 바텀 시트
+AppBottomSheet.show(
+  context,
+  child: Padding(
+    padding: const EdgeInsets.all(24),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('내용'),
+        AppButton(label: '확인', onPressed: () => Navigator.pop(context)),
+      ],
+    ),
+  ),
+);
+
+// 옵션 선택 바텀 시트
+final result = await AppBottomSheet.showOptions<String>(
+  context,
+  title: '옵션 제목',
+  options: [
+    const BottomSheetOption(
+      label: '갤러리에서 선택',
+      icon: Icons.photo_library_outlined,
+      value: 'gallery',
+    ),
+    const BottomSheetOption(
+      label: '삭제',
+      icon: Icons.delete_outline,
+      value: 'delete',
+      isDestructive: true,    // 빨간색으로 표시
+    ),
+  ],
+);

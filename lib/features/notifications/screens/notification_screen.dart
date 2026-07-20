@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/notifications_provider.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../../core/utils/date_formatter.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({super.key});
@@ -111,7 +112,9 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                       Text(notification['body'] as String),
                       const SizedBox(height: 4),
                       Text(
-                        _formatDate(notification['created_at'] as String),
+                        DateFormatter.timeAgo(
+                          notification['created_at'] as String,
+                        ),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -156,17 +159,5 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       default:
         return Icons.notifications;
     }
-  }
-
-  // ③ 날짜 포맷
-  String _formatDate(String dateStr) {
-    final date = DateTime.parse(dateStr).toLocal();
-    final now = DateTime.now();
-    final diff = now.difference(date);
-
-    if (diff.inMinutes < 1) return '방금 전';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}분 전';
-    if (diff.inHours < 24) return '${diff.inHours}시간 전';
-    return '${diff.inDays}일 전';
   }
 }

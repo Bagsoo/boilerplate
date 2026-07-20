@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/profile_provider.dart';
 import '../../../core/services/fcm_service.dart';
+import '../../../core/utils/url_util.dart';
 import '../../../features/profile/repositories/profile_repository.dart';
 
 class TermsScreen extends ConsumerStatefulWidget {
@@ -107,7 +108,10 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
               onChanged: (value) => setState(() => _termsAgreed = value!),
               title: const Text('이용약관 동의 (필수)'),
               secondary: TextButton(
-                onPressed: () {}, // TODO 약관 내용 보기
+                onPressed: () => UrlUtil.launch(
+                  context,
+                  'https://www.google.com', // ← 나중에 이용약관 URL로 교체
+                ),
                 child: const Text('보기'),
               ),
             ),
@@ -118,7 +122,10 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
               onChanged: (value) => setState(() => _privacyAgreed = value!),
               title: const Text('개인정보처리방침 동의 (필수)'),
               secondary: TextButton(
-                onPressed: () {}, // TODO 내용 보기
+                onPressed: () => UrlUtil.launch(
+                  context,
+                  'https://www.naver.com', // ← 나중에 개인정보처리방침 URL로 교체
+                ),
                 child: const Text('보기'),
               ),
             ),

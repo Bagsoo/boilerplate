@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_pt/core/app_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -13,6 +12,8 @@ import 'core/widgets/offline_banner.dart';
 import 'core/route.dart';
 import 'core/app_theme.dart';
 import 'core/logger.dart';
+import 'core/app_config.dart';
+import 'core/services/force_update_service.dart';
 import 'features/settings/providers/theme_provider.dart';
 import 'features/auth/services/auth_service.dart';
 import 'features/notifications/providers/notifications_provider.dart';
@@ -115,6 +116,11 @@ class _MyAppState extends ConsumerState<MyApp> {
         router.go('/login');
       },
     );
+
+    // 강제 업데이트 체크
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ForceUpdateService().checkForceUpdate(context); // ← 추가
+    });
   }
 
   @override

@@ -6,6 +6,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/app_snack_bar.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../../core/utils/clipboard_util.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -60,7 +61,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           AvatarImage(imageUrl: profile.profileImage, radius: 50),
           const SizedBox(height: 16),
-          Text('이메일: ${profile.email}'),
+          GestureDetector(
+            onLongPress: () => ClipboardUtil.copy(
+              context,
+              profile.email,
+              message: '이메일이 복사되었어요',
+            ),
+            child: Text('이메일: ${profile.email}'),
+          ),
           const SizedBox(height: 8),
 
           if (!_isEditing) ...[
