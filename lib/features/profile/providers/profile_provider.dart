@@ -46,6 +46,23 @@ class ProfileNotifier extends Notifier<ProfileModel?> {
     state = state?.copyWith(profileImage: urlWithTimestamp);
   }
 
+  Future<void> updateNotificationSettings({
+    required bool pushEnabled,
+    required bool marketingEnabled,
+  }) async {
+    if (state == null) return;
+
+    await _repository.updateNotificationSettings(
+      pushEnabled: pushEnabled,
+      marketingEnabled: marketingEnabled,
+    );
+
+    state = state!.copyWith(
+      pushNotificationEnabled: pushEnabled,
+      marketingNotificationEnabled: marketingEnabled,
+    );
+  }
+
   void clear() => state = null;
 }
 

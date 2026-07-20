@@ -5,6 +5,8 @@ class ProfileModel {
   final String? profileImage;
   final DateTime? termsAgreedAt;
   final DateTime? privacyAgreedAt;
+  final bool pushNotificationEnabled;
+  final bool marketingNotificationEnabled;
 
   ProfileModel({
     required this.id,
@@ -13,6 +15,8 @@ class ProfileModel {
     this.profileImage,
     this.termsAgreedAt,
     required this.privacyAgreedAt,
+    this.pushNotificationEnabled = true,
+    this.marketingNotificationEnabled = false,
   });
 
   factory ProfileModel.fromMap(Map<String, dynamic> map, String email) {
@@ -27,6 +31,9 @@ class ProfileModel {
       privacyAgreedAt: map['privacy_agreed_at'] != null
           ? DateTime.parse(map['privacy_agreed_at'])
           : null,
+      pushNotificationEnabled: map['push_notification_enabled'] ?? true,
+      marketingNotificationEnabled:
+          map['marketing_notification_enabled'] ?? false,
     );
   }
 
@@ -36,6 +43,8 @@ class ProfileModel {
     String? profileImage,
     DateTime? termsAgreedAt,
     DateTime? privacyAgreedAt,
+    bool? pushNotificationEnabled,
+    bool? marketingNotificationEnabled,
   }) {
     return ProfileModel(
       id: id,
@@ -44,6 +53,10 @@ class ProfileModel {
       profileImage: profileImage ?? this.profileImage,
       termsAgreedAt: termsAgreedAt ?? this.termsAgreedAt,
       privacyAgreedAt: privacyAgreedAt ?? this.privacyAgreedAt,
+      pushNotificationEnabled:
+          pushNotificationEnabled ?? this.pushNotificationEnabled,
+      marketingNotificationEnabled:
+          marketingNotificationEnabled ?? this.marketingNotificationEnabled,
     );
   }
 }

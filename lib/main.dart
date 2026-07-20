@@ -14,6 +14,7 @@ import 'core/app_theme.dart';
 import 'core/logger.dart';
 import 'core/app_config.dart';
 import 'core/services/force_update_service.dart';
+import 'core/services/review_service.dart';
 import 'features/settings/providers/theme_provider.dart';
 import 'features/auth/services/auth_service.dart';
 import 'features/notifications/providers/notifications_provider.dart';
@@ -119,7 +120,8 @@ class _MyAppState extends ConsumerState<MyApp> {
 
     // 강제 업데이트 체크
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ForceUpdateService().checkForceUpdate(context); // ← 추가
+      ForceUpdateService().checkForceUpdate(context);
+      ReviewService().checkAndRequestReview();
     });
   }
 

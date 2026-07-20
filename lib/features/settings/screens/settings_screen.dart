@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pt/core/widgets/app_bottom_sheet.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +6,8 @@ import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/profile/providers/profile_provider.dart';
 import '../../../features/settings/providers/theme_provider.dart';
 import '../../../features/notifications/providers/notifications_provider.dart';
+import '../../../core/services/review_service.dart';
+import '../../../core/widgets/app_bottom_sheet.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/confirm_dialog.dart';
 import '../../../core/widgets/app_snack_bar.dart';
@@ -91,6 +92,50 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                 }
               },
             ),
+            const Divider(),
+            const SizedBox(height: 8),
+
+            // 일반 알림
+            SwitchListTile(
+              title: const Text('푸시 알림'),
+              subtitle: const Text('새로운 알림을 받아요'),
+              secondary: const Icon(Icons.notifications_outlined),
+              value: profile?.pushNotificationEnabled ?? true,
+              onChanged: (value) {
+                ref
+                    .read(profileProvider.notifier)
+                    .updateNotificationSettings(
+                      pushEnabled: value,
+                      marketingEnabled:
+                          profile?.marketingNotificationEnabled ?? false,
+                    );
+              },
+            ),
+
+            // 마케팅 알림
+            SwitchListTile(
+              title: const Text('마케팅 알림'),
+              subtitle: const Text('혜택 및 이벤트 소식을 받아요'),
+              secondary: const Icon(Icons.campaign_outlined),
+              value: profile?.marketingNotificationEnabled ?? false,
+              onChanged: (value) {
+                ref
+                    .read(profileProvider.notifier)
+                    .updateNotificationSettings(
+                      pushEnabled: profile?.pushNotificationEnabled ?? true,
+                      marketingEnabled: value,
+                    );
+              },
+            ),
+            const SizedBox(height: 8),
+            const Divider(),
+            AppButton(
+              label: '리뷰 남기기',
+              type: AppButtonType.ghost,
+              icon: Icons.star_outline_rounded,
+              onPressed: () => ReviewService().openStoreListing(),
+            ),
+            const SizedBox(height: 16),
             AppButton(
               label: '로그아웃',
               type: AppButtonType.secondary,

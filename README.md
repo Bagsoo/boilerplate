@@ -100,6 +100,8 @@ flutter build ipa -t lib/main_prod.dart
 20. UrlUtil
 21. 앱 강제 업데이트
 22. SkeletonLoader 스켈레톤 UI
+23. 앱 리뷰 요청
+24. 알림 설정
 
 ##########################################################################
 # boiler plate 사용법
@@ -469,6 +471,31 @@ SkeletonProfile()
 5. 알림 리스트 (기본 6개)
 SkeletonNotificationList()
 SkeletonNotificationList(itemCount: 10)
+
+## 앱 리뷰 요청
+자동: 앱 5번 실행 시 자동으로 리뷰 팝업 표시
+수동: 설정 화면 "리뷰 남기기" 버튼
+
+커스터마이징:
+lib/core/services/review_service.dart에서 수정:
+  openCount >= 5    ← 실행 횟수 조건 변경
+  inDays < 30       ← 재요청 간격 변경 (일)
+
+iOS App Store ID 교체:
+  openStoreListing(appStoreId: 'XXXXXXXXX')
+  → 실제 App Store ID로 교체
+
+## 알림 설정
+설정 화면에서 스위치로 알림 동의 관리:
+
+- 푸시 알림: 일반 알림 수신 여부 (기본값: ON)
+- 마케팅 알림: 이벤트/혜택 알림 수신 여부 (기본값: OFF)
+
+알림 타입별 처리:
+- type: 'system', 'chat' 등 → push_notification_enabled 체크
+- type: 'marketing'         → marketing_notification_enabled 체크
+
+Edge Function에서 자동으로 필터링됨.
 
 ## 공통 위젯 사용법
 

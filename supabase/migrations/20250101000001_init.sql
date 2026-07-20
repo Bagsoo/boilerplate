@@ -9,6 +9,8 @@ create table public.profiles (
   deleted_at timestamptz,
   terms_agreed_at timestamptz,
   privacy_agreed_at timestamptz,
+  push_notification_enabled boolean default true,
+  marketing_notification_enabled boolean default false,
   created_at timestamptz default now()
 );
 

@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // ① FCM v1 API용 액세스 토큰 가져오기
 async function getAccessToken(serviceAccount: any): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
-  
+
   const header = { alg: "RS256", typ: "JWT" };
   const payload = {
     iss: serviceAccount.client_email,
@@ -14,7 +14,6 @@ async function getAccessToken(serviceAccount: any): Promise<string> {
     exp: now + 3600,
   };
 
-  // JWT 생성
   const encoder = new TextEncoder();
   const headerB64 = btoa(JSON.stringify(header));
   const payloadB64 = btoa(JSON.stringify(payload));
@@ -34,9 +33,10 @@ async function getAccessToken(serviceAccount: any): Promise<string> {
     encoder.encode(signingInput)
   );
 
-  const jwt = `${signingInput}.${btoa(String.fromCharCode(...new Uint8Array(signature)))}`;
+  const jwt = `${signingInput}.${btoa(
+    String.fromCharCode(...new Uint8Array(signature))
+  )}`;
 
-  // 액세스 토큰 요청
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -68,7 +68,8 @@ async function sendFcmPush(
   body: string,
   data: any,
   accessToken: string,
-  projectId: string
+  projectId: string,
+  route: string
 ) {
   const response = await fetch(
     `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
@@ -83,9 +84,9 @@ async function sendFcmPush(
           token,
           notification: { title, body },
           data: {
-            ...data,
-            click_action: 'FLUTTER_NOTIFICATION_CLICK',
-            route: record.data?.route ?? '/notifications',  // ← 이동할 경로
+            ...(data ?? {}),
+            click_action: "FLUTTER_NOTIFICATION_CLICK",
+            route: route,
           },
           android: {
             priority: "high",
@@ -106,17 +107,45 @@ async function sendFcmPush(
 // ③ 메인 핸들러
 serve(async (req) => {
   try {
-    const { record } = await req.json();   // DB Webhook에서 넘어오는 데이터
+    const { record } = await req.json();
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const serviceAccount = JSON.parse(Deno.env.get("FIREBASE_SERVICE_ACCOUNT")!);
+    // ④ 알림 동의 여부 확인
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("push_notification_enabled, marketing_notification_enabled")
+      .eq("id", record.receiver_id)
+      .single();
+
+    // 푸시 알림 비활성화된 유저
+    if (!profile?.push_notification_enabled) {
+      return new Response(
+        JSON.stringify({ message: "푸시 알림 비활성화된 유저" }),
+        { status: 200 }
+      );
+    }
+
+    // 마케팅 알림 타입인데 마케팅 동의 안 한 유저
+    if (
+      record.type === "marketing" &&
+      !profile?.marketing_notification_enabled
+    ) {
+      return new Response(
+        JSON.stringify({ message: "마케팅 알림 비활성화된 유저" }),
+        { status: 200 }
+      );
+    }
+
+    const serviceAccount = JSON.parse(
+      Deno.env.get("FIREBASE_SERVICE_ACCOUNT")!
+    );
     const accessToken = await getAccessToken(serviceAccount);
 
-    // receiver_id의 device_tokens 가져오기
+    // ⑤ receiver_id의 device_tokens 가져오기
     const { data: tokens } = await supabase
       .from("device_tokens")
       .select("token")
@@ -128,7 +157,10 @@ serve(async (req) => {
       });
     }
 
-    // 모든 기기에 푸시 전송
+    // ⑥ 딥링크 route 설정
+    const route = record.data?.route ?? "/notifications";
+
+    // ⑦ 모든 기기에 푸시 전송
     const results = await Promise.all(
       tokens.map((t: any) =>
         sendFcmPush(
@@ -137,7 +169,8 @@ serve(async (req) => {
           record.body,
           record.data,
           accessToken,
-          serviceAccount.project_id
+          serviceAccount.project_id,
+          route
         )
       )
     );
@@ -146,7 +179,7 @@ serve(async (req) => {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (e) {
+  } catch (e: any) {
     return new Response(JSON.stringify({ error: e.message }), {
       status: 500,
     });

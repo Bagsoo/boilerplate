@@ -50,6 +50,23 @@ class ProfileRepository {
         .update({'terms_agreed_at': now, 'privacy_agreed_at': now})
         .eq('id', userId);
   }
+
+  // 알림 설정 업데이트
+  Future<void> updateNotificationSettings({
+    required bool pushEnabled,
+    required bool marketingEnabled,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    await _client
+        .from('profiles')
+        .update({
+          'push_notification_enabled': pushEnabled,
+          'marketing_notification_enabled': marketingEnabled,
+        })
+        .eq('id', user.id);
+  }
 }
 
 // Provider 등록
