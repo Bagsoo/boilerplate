@@ -5,6 +5,7 @@ import '../providers/notifications_provider.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/utils/date_formatter.dart';
+import '../../../core/widgets/skeleton_loader.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({super.key});
@@ -55,12 +56,14 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
           ),
         ],
       ),
-      body: notifications.isEmpty
+      body: notifications.isEmpty && !notifier.hasMore
           ? const EmptyView(
               title: '알림이 없어요',
               description: '새로운 알림이 오면 여기에 표시돼요',
               icon: Icons.notifications_none_rounded,
             )
+          : notifications.isEmpty
+          ? const SkeletonNotificationList()
           : ListView.builder(
               controller: _scrollController,
               itemCount: notifications.length + 1, // 로딩 인디케이터를 위해 +1

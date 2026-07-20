@@ -99,6 +99,7 @@ flutter build ipa -t lib/main_prod.dart
 19. KeyboardDismisser 사용법
 20. UrlUtil
 21. 앱 강제 업데이트
+22. SkeletonLoader 스켈레톤 UI
 
 ##########################################################################
 # boiler plate 사용법
@@ -451,6 +452,23 @@ _iosStoreUrl     → 실제 앱스토어 URL로 교체
   app_config 테이블
   min_version_android → 1.1.0 으로 변경
   min_version_ios     → 1.1.0 으로 변경
+
+### SkeletonLoader (스켈레톤 로딩)
+1. 기본 - 너비/높이 커스텀
+SkeletonLoader(width: 200, height: 14)
+
+2. 리스트 아이템 (아바타 + 제목 + 부제목)
+SkeletonListItem()
+
+3. 카드
+SkeletonCard()
+
+4. 프로필 화면
+SkeletonProfile()
+
+5. 알림 리스트 (기본 6개)
+SkeletonNotificationList()
+SkeletonNotificationList(itemCount: 10)
 
 ## 공통 위젯 사용법
 

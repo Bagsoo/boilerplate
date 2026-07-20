@@ -7,6 +7,7 @@ import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/app_snack_bar.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/utils/clipboard_util.dart';
+import '../../../core/widgets/skeleton_loader.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -51,7 +52,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final profile = ref.watch(profileProvider);
 
     if (profile == null || _isLoading) {
-      return const LoadingView();
+      return const SkeletonProfile();
     }
 
     return Padding(
