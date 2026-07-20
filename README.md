@@ -92,6 +92,8 @@ flutter build ipa -t lib/main_prod.dart
 12. 온보딩 설정
 13. Crashlytics 설정
 14. 검색 커스터마이징
+15. 아키텍처
+16. 알림 실시간 업데이트 아직 안됨 - 아래 방법 설명 있음
 
 ##########################################################################
 # boiler plate 사용법
@@ -326,6 +328,52 @@ Firebase Console → Crashlytics 활성화
 ## 검색 커스터마이징
 lib/features/search/screens/search_screen.dart에서
 _dummyData 리스트를 실제 Supabase 쿼리로 교체하면 됨
+
+## 아키텍처 ################################
+### 레이어 구조
+Screen (UI)
+   ↓
+Provider (Notifier) — 상태 관리
+   ↓
+Repository — 비즈니스 로직
+   ↓
+Service — Supabase/외부 API 직접 호출
+
+### Repository 목록
+lib/features/auth/repositories/auth_repository.dart
+  - signIn / signUp / signOut
+  - signInWithGoogle / signInWithApple
+  - deleteAccount
+  - hasAgreedToTerms
+
+lib/features/profile/repositories/profile_repository.dart
+  - getProfile
+  - updateNickname
+  - uploadAvatar / deleteAvatar
+  - saveAgreedAt
+
+lib/features/notifications/repositories/notifications_repository.dart
+  - getNotifications (페이지네이션)
+  - markAsRead / markAllAsRead
+  - sendNotification (RPC)
+
+### 새 기능 추가 시
+Repository에 메서드 추가
+   ↓
+Provider에서 Repository 호출
+   ↓
+Screen에서 Provider 호출
+###############################################
+
+### 알림 실시간 업데이트
+지금 구조는 알림 스크린 진입 시 갱신됨.
+실시간이 필요하면 두 가지 방법:
+  1. FCM 포그라운드 수신 시 loadNotifications() 호출
+     → FcmService에 Ref 주입 필요
+     → FcmService(ref).initialize() 로 변경
+  2. Supabase Realtime 구독
+     → notifications 테이블 변경 감지
+     → 복잡도 높음
 
 ## 공통 위젯 사용법
 
