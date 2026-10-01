@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_pt/features/settings/providers/locale_provider.dart';
+import 'package:flutter_pt/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -41,10 +43,12 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
     final profile = ref.watch(profileProvider);
+    final locale = ref.watch(localeProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('설정')),
-      body: Padding(
+      appBar: AppBar(title: Text(l10n.setting)),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
@@ -77,7 +81,7 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
             const Text('탭하여 이미지 변경'),
             const SizedBox(height: 32),
             SwitchListTile(
-              title: const Text('다크모드'),
+              title: Text(l10n.darkmode),
               secondary: Icon(
                 themeMode == ThemeMode.dark
                     ? Icons.dark_mode
@@ -94,6 +98,13 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
             ),
             const Divider(),
             const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.language),
+              title: Text(l10n.settingsLanguage),
+              subtitle: Text(_localeLabel(locale, l10n)),
+              onTap: () => _showLanguageSheet(context),
+            ),
+            const Divider(),
 
             // 일반 알림
             SwitchListTile(
@@ -136,11 +147,10 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
               onPressed: () => ReviewService().openStoreListing(),
             ),
             const SizedBox(height: 16),
-            AppButton(
-              label: '로그아웃',
-              type: AppButtonType.secondary,
-              icon: Icons.logout,
-              onPressed: () async {
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('로그아웃'),
+              onTap: () async {
                 await ref.read(authProvider.notifier).signOut();
                 ref.read(profileProvider.notifier).clear();
                 ref.read(notificationsProvider.notifier).clear();
@@ -148,15 +158,22 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
                 context.go('/login');
               },
             ),
-            const SizedBox(height: 16),
-            AppButton(
-              label: '회원탈퇴',
-              type: AppButtonType.danger,
-              icon: Icons.person_remove_outlined,
-              onPressed: () => _deleteAccount(context, ref),
+            const SizedBox(height: 0),
+            ListTile(
+              leading: Icon(
+                Icons.person_remove_outlined,
+                color: Theme.of(context).colorScheme.error.withOpacity(0.7),
+              ),
+              title: Text(
+                '회원탈퇴',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error.withOpacity(0.7),
+                ),
+              ),
+              onTap: () => _deleteAccount(context, ref),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 32),
             Text(
               '버전 $_version',
               style: const TextStyle(color: Colors.grey, fontSize: 12),
@@ -196,5 +213,45 @@ class _SettingsScreen extends ConsumerState<SettingsScreen> {
         type: SnackBarType.error,
       );
     }
+  }
+
+  String _localeLabel(Locale? locale, AppLocalizations l10n) {
+    switch (locale?.languageCode) {
+      case 'ko':
+        return '한국어';
+      case 'en':
+        return 'English';
+      default:
+        return l10n.languageSystem;
+    }
+  }
+
+  Future<void> _showLanguageSheet(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final result = await AppBottomSheet.showOptions<String>(
+      context,
+      title: l10n.settingsLanguage,
+      options: [
+        BottomSheetOption(
+          label: l10n.languageSystem,
+          icon: Icons.phone_android,
+          value: 'system',
+        ),
+        const BottomSheetOption(
+          label: '한국어',
+          icon: Icons.language,
+          value: 'ko',
+        ),
+        const BottomSheetOption(
+          label: 'English',
+          icon: Icons.language,
+          value: 'en',
+        ),
+      ],
+    );
+    if (result == null) return;
+    ref
+        .read(localeProvider.notifier)
+        .setLocale(result == 'system' ? null : Locale(result));
   }
 }

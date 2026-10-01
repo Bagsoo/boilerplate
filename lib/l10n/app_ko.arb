@@ -1,0 +1,48 @@
+{
+    "@@locale": "ko",
+    "appTitle": "내 앱",
+    "@appTitle": {
+        "description": "앱 제목"
+    },
+    "hello": "안녕하세요, {name}님",
+    "@hello": {
+        "description": "사용자 인사말",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "homeGreeting": "안녕하세요, {nickname}님!",
+    "@homeGreeting": {
+        "description": "홈 화면 인사말",
+        "placeholders": {
+            "nickname": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsLanguage": "언어",
+    "languageSystem": "시스템 설정 따름",
+    "darkmode": "다크모드",
+    "setting": "세팅",
+    "profile": "프로필",
+    "profileEmail": "이메일: {email}",
+    "@profileEmail": {
+        "description": "프로필탭 유저 이메일",
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "profileNickname": "닉네임: {nickname}",
+    "@profileNickname": {
+        "description": "프로필탭 유저 닉네임",
+        "placeholders": {
+            "nickname": {
+                "type": "String"
+            }
+        }
+    }
+}

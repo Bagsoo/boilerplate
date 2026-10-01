@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_pt/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/profile_provider.dart';
 import '../../../core/widgets/avatar_image.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/app_snack_bar.dart';
-import '../../../core/widgets/loading_view.dart';
 import '../../../core/utils/clipboard_util.dart';
 import '../../../core/widgets/skeleton_loader.dart';
 
@@ -50,6 +50,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(profileProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     if (profile == null || _isLoading) {
       return const SkeletonProfile();
@@ -68,14 +69,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               profile.email,
               message: '이메일이 복사되었어요',
             ),
-            child: Text('이메일: ${profile.email}'),
+            child: Text(l10n.profileEmail(profile.email)),
           ),
           const SizedBox(height: 8),
 
           if (!_isEditing) ...[
             Row(
               children: [
-                Text('닉네임: ${profile.nickname}'),
+                Text(l10n.profileNickname(profile.nickname)),
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),

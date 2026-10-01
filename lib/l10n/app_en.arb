@@ -1,0 +1,15 @@
+{
+    "@@locale": "en",
+    "appTitle": "My App",
+    "hello": "Hello, {name}",
+    "homeGreeting": "Hello, {nickname}!",
+    "settingsLanguage": "Language",
+    "languageSystem": "System default",
+    "darkmode": "darkmode",
+    "setting": "setting",
+    "profile": "profile",
+    "email": "email",
+    "nickname": "nickname",
+    "profileEmail": "Email: {email}",
+    "profileNickname": "Nickname: {nickname}"
+}

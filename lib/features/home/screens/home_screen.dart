@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_pt/l10n/app_localizations.dart';
 import '../../profile/providers/profile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -24,11 +25,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(profileProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Center(
       child: profile == null
           ? const CircularProgressIndicator()
-          : Text('안녕하세요, ${profile.nickname}님!'),
+          : Text(l10n.homeGreeting(profile.nickname)),
     );
   }
 }

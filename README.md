@@ -65,6 +65,10 @@ flutter build ipa -t lib/main_prod.dart
   - FlutterError.onError
   - runZonedGuarded
   - Firebase Crashlytics
+✅ 다국어 (gen_l10n + ARB)
+  - 한국어 / 영어
+  - 설정에서 언어 선택 (시스템 / 한국어 / English)
+  - SP로 언어 저장
 ✅ 인터넷 연결 상태 감지
 ✅ 환경 분리
   - main_dev.dart / main_prod.dart
@@ -102,6 +106,7 @@ flutter build ipa -t lib/main_prod.dart
 22. SkeletonLoader 스켈레톤 UI
 23. 앱 리뷰 요청
 24. 알림 설정
+25. 다국어 (문자열 추가 / 언어 추가)
 
 ##########################################################################
 # boiler plate 사용법
@@ -615,3 +620,66 @@ final result = await AppBottomSheet.showOptions<String>(
     ),
   ],
 );
+
+## 다국어 (gen_l10n + ARB)
+지원 언어: 한국어(ko, 기본/템플릿), English(en)
+
+파일 위치:
+  l10n.yaml                       ← 설정 (프로젝트 루트)
+  lib/l10n/app_ko.arb             ← 템플릿 (메타데이터는 여기에만)
+  lib/l10n/app_en.arb
+  lib/l10n/app_localizations*.dart ← 자동 생성 (직접 수정 금지)
+  lib/features/settings/providers/locale_provider.dart ← 앱 내 언어 선택
+
+### 문자열 추가하는 법
+1. app_ko.arb에 키 추가 (플레이스홀더가 있으면 @키 메타데이터도)
+   "login": "로그인",
+   "homeGreeting": "안녕하세요, {nickname}님!",
+   "@homeGreeting": {
+     "placeholders": { "nickname": { "type": "String" } }
+   }
+2. app_en.arb에 같은 키 추가
+   "login": "Login",
+   "homeGreeting": "Hello, {nickname}!"
+3. flutter gen-l10n
+4. 코드에서 사용
+   final l10n = AppLocalizations.of(context)!;
+   Text(l10n.login)
+   Text(l10n.homeGreeting(profile.nickname))
+
+주의:
+- ARB는 JSON이라 객체는 하나, 항목 사이 쉼표, 마지막 항목 뒤 쉼표 금지
+- 모든 언어 파일에 같은 키를 넣을 것
+- 문장을 쪼개 붙이지 말고 통째로 넣고 변수는 {name}으로
+- 키 이름은 화면+용도 (homeGreeting, settingsLanguage)
+- 키 추가 후 빨간 줄이 뜨면 gen-l10n을 안 한 것
+
+### 언어 추가하는 법 (예: 일본어 ja)
+1. lib/l10n/app_ja.arb 생성
+   { "@@locale": "ja", "login": "ログイン", ... }
+   (app_ko.arb의 키를 전부 복사해서 번역)
+2. flutter gen-l10n
+   → supportedLocales에 자동 반영됨 (main.dart 수정 불필요)
+3. 설정 화면 언어 선택에 항목 추가
+   lib/features/settings/screens/settings_screen.dart
+   - _showLanguageSheet의 options에 추가
+     const BottomSheetOption(label: '日本語', icon: Icons.language, value: 'ja')
+   - _localeLabel의 switch에 추가
+     case 'ja': return '日本語';
+4. iOS: ios/Runner/Info.plist의 CFBundleLocalizations에 ja 추가
+   <string>ja</string>
+5. 번역 누락 확인
+   l10n.yaml에 untranslated-messages-file: untranslated.json 추가 후
+   gen-l10n 하면 빠진 키 목록이 생성됨
+
+언어 이름(한국어, English, 日本語)은 번역하지 않고 각 언어 자체 표기로 둔다.
+
+### 앱 내 언어 전환 동작
+- localeProvider의 상태가 null이면 시스템 언어를 따름
+- 선택한 언어는 SharedPreferences('app_locale')에 저장
+- main.dart의 MaterialApp.router에 locale: ref.watch(localeProvider) 연결
+
+### 자주 나는 오류
+- "getter 'xxx' isn't defined": ARB에 키 추가 후 gen-l10n 미실행
+- gen-l10n 실패: ARB JSON 문법 오류 (쉼표, 중괄호 중복)
+- 새 언어가 안 나옴: @@locale 값과 파일명(app_ja.arb)이 일치하는지 확인

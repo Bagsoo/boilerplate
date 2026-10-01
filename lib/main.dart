@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter_pt/l10n/app_localizations.dart';
 import 'core/widgets/offline_banner.dart';
 import 'core/route.dart';
 import 'core/app_theme.dart';
@@ -16,6 +17,7 @@ import 'core/app_config.dart';
 import 'core/services/force_update_service.dart';
 import 'core/services/review_service.dart';
 import 'features/settings/providers/theme_provider.dart';
+import 'features/settings/providers/locale_provider.dart';
 import 'features/auth/services/auth_service.dart';
 import 'features/notifications/providers/notifications_provider.dart';
 import 'features/profile/providers/profile_provider.dart';
@@ -134,10 +136,14 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
+    final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
       // ④ 개발 환경에서만 디버그 배너
       debugShowCheckedModeBanner: AppConfig.isDev,
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),

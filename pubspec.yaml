@@ -30,6 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
   supabase_flutter: ^2.13.0
   go_router: ^14.0.0
@@ -76,6 +79,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true  
   assets:
     - .env
     - .env.dev
