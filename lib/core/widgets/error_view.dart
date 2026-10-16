@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/l10n_extension.dart';
 
 class ErrorView extends StatelessWidget {
   final String? message;
@@ -21,7 +22,7 @@ class ErrorView extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withOpacity(0.08),
+                color: const Color(0xFFEF4444).withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -33,7 +34,7 @@ class ErrorView extends StatelessWidget {
             const SizedBox(height: 20),
 
             Text(
-              '오류가 발생했어요',
+              context.l10n.commonErrorTitle,
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -42,10 +43,10 @@ class ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              message ?? '잠시 후 다시 시도해주세요',
+              message ?? context.l10n.commonErrorDescription,
               style: TextStyle(
                 fontSize: 14,
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -60,7 +61,7 @@ class ErrorView extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: onRetry,
                   icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text('다시 시도'),
+                  label: Text(context.l10n.commonRetry),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFEF4444),
                     foregroundColor: Colors.white,

@@ -1,54 +1,45 @@
+import 'package:intl/intl.dart';
+import '../../l10n/app_localizations.dart';
+
 class DateFormatter {
-  // ① "방금 전", "3분 전" 등 상대적 시간
-  static String timeAgo(String dateStr) {
+  static String timeAgo(AppLocalizations l10n, String dateStr) {
+    final date = DateTime.parse(dateStr).toLocal();
+    final diff = DateTime.now().difference(date);
+
+    if (diff.inSeconds < 60) return l10n.timeJustNow;
+    if (diff.inMinutes < 60) return l10n.timeMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.timeHoursAgo(diff.inHours);
+    if (diff.inDays < 7) return l10n.timeDaysAgo(diff.inDays);
+    if (diff.inDays < 30) return l10n.timeWeeksAgo((diff.inDays / 7).floor());
+    if (diff.inDays < 365) {
+      return l10n.timeMonthsAgo((diff.inDays / 30).floor());
+    }
+    return l10n.timeYearsAgo((diff.inDays / 365).floor());
+  }
+
+  static String toDate(AppLocalizations l10n, String dateStr) {
+    final date = DateTime.parse(dateStr).toLocal();
+    return DateFormat.yMd(l10n.localeName).format(date);
+  }
+
+  static String toDateTime(AppLocalizations l10n, String dateStr) {
+    final date = DateTime.parse(dateStr).toLocal();
+    return DateFormat.yMd(l10n.localeName).add_Hm().format(date);
+  }
+
+  static String toRelativeDate(AppLocalizations l10n, String dateStr) {
     final date = DateTime.parse(dateStr).toLocal();
     final now = DateTime.now();
-    final diff = now.difference(date);
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(date.year, date.month, date.day);
+    final days = today.difference(target).inDays;
 
-    if (diff.inSeconds < 60) return '방금 전';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}분 전';
-    if (diff.inHours < 24) return '${diff.inHours}시간 전';
-    if (diff.inDays < 7) return '${diff.inDays}일 전';
-    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}주 전';
-    if (diff.inDays < 365) return '${(diff.inDays / 30).floor()}개월 전';
-    return '${(diff.inDays / 365).floor()}년 전';
+    if (days == 0) return l10n.timeToday;
+    if (days == 1) return l10n.timeYesterday;
+    return toDate(l10n, dateStr);
   }
 
-  // ② "2024.01.15" 형식
-  static String toDate(String dateStr) {
-    final date = DateTime.parse(dateStr).toLocal();
-    return '${date.year}.${_pad(date.month)}.${_pad(date.day)}';
+  static String timeAgoFromDateTime(AppLocalizations l10n, DateTime date) {
+    return timeAgo(l10n, date.toIso8601String());
   }
-
-  // ③ "2024.01.15 14:30" 형식
-  static String toDateTime(String dateStr) {
-    final date = DateTime.parse(dateStr).toLocal();
-    return '${toDate(dateStr)} ${_pad(date.hour)}:${_pad(date.minute)}';
-  }
-
-  // ④ "오늘", "어제", 날짜 형식
-  static String toRelativeDate(String dateStr) {
-    final date = DateTime.parse(dateStr).toLocal();
-    final now = DateTime.now();
-
-    final isToday =
-        date.year == now.year && date.month == now.month && date.day == now.day;
-
-    final yesterday = now.subtract(const Duration(days: 1));
-    final isYesterday =
-        date.year == yesterday.year &&
-        date.month == yesterday.month &&
-        date.day == yesterday.day;
-
-    if (isToday) return '오늘';
-    if (isYesterday) return '어제';
-    return toDate(dateStr);
-  }
-
-  // ⑤ DateTime 객체로도 받을 수 있게
-  static String timeAgoFromDateTime(DateTime date) {
-    return timeAgo(date.toIso8601String());
-  }
-
-  static String _pad(int value) => value.toString().padLeft(2, '0');
 }

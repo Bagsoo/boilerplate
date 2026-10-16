@@ -1,46 +1,39 @@
-import 'package:image_picker/image_picker.dart';
+import '../../../core/utils/image_upload_util.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileService {
   final _client = Supabase.instance.client;
-  final _picker = ImagePicker();
 
   // 갤러리에서 이미지 선택 후 업로드
   Future<String?> uploadAvatar() async {
-    // ① 갤러리에서 이미지 선택
-    final image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 80, // 용량 줄이기
-    );
-
-    if (image == null) return null; // 선택 취소
+    final image = await ImageUploadUtil.pick(maxWidth: 512, maxHeight: 512);
+    if (image == null) return null;
 
     final userId = _client.auth.currentUser!.id;
-    final bytes = await image.readAsBytes();
-    final fileExt = image.path.split('.').last;
-    final fileName = '$userId/avatar.$fileExt'; // ② 경로: userId/avatar.jpg
 
-    // ③ Storage에 업로드
-    await _client.storage
-        .from('avatars')
-        .uploadBinary(
-          fileName,
-          bytes,
-          fileOptions: const FileOptions(upsert: true), // 덮어쓰기 허용
-        );
+    final url = await ImageUploadUtil.upload(
+      image: image,
+      bucket: 'avatars',
+      path: '$userId/avatar',
+      upsert: true,
+    );
 
-    // ④ 업로드된 이미지 Public URL 반환
-    final imageUrl = _client.storage.from('avatars').getPublicUrl(fileName);
-
-    // ⑤ profiles 테이블에 URL 저장
     await _client
         .from('profiles')
-        .update({'profile_image': imageUrl})
+        .update({'profile_image': url})
         .eq('id', userId);
 
-    return imageUrl;
+    return url;
+  }
+
+  // 프로필 이미지 삭제 (파일 + profiles 컬럼 비우기)
+  Future<void> removeAvatar() async {
+    final userId = _client.auth.currentUser!.id;
+    await deleteAvatar();
+    await _client
+        .from('profiles')
+        .update({'profile_image': null})
+        .eq('id', userId);
   }
 
   // 회원 탈퇴 시 프로필 이미지 삭제

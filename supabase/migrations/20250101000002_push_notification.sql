@@ -58,6 +58,7 @@ create or replace function send_notification(
 returns void
 language plpgsql
 security definer
+set search_path = public
 as $$
 begin
   insert into public.notifications (
@@ -65,5 +66,68 @@ begin
   ) values (
     p_receiver_id, p_sender_id, p_title, p_body, p_type, p_data
   );
+end;
+$$;
+
+-- 방법 A: 일반 사용자 호출 차단 (서버/Edge Function만 사용)
+revoke execute on function send_notification(uuid, text, text, text, jsonb, uuid) from public, anon, authenticated;
+
+
+-- =============================================
+-- 5. 토큰 등록 RPC
+--    같은 토큰이 다른 계정에 남아 있으면 정리하고 현재 계정으로 등록
+-- =============================================
+create or replace function register_device_token(
+  p_token text,
+  p_platform text,
+  p_device_name text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated';
+  end if;
+
+  -- 다른 계정에 남아 있는 같은 토큰 제거
+  delete from public.device_tokens
+  where token = p_token and user_id <> auth.uid();
+
+  -- 현재 계정으로 upsert
+  insert into public.device_tokens (user_id, token, platform, device_name, updated_at, last_used_at)
+  values (auth.uid(), p_token, p_platform, p_device_name, now(), now())
+  on conflict (user_id, token)
+  do update set
+    platform = excluded.platform,
+    device_name = excluded.device_name,
+    updated_at = now(),
+    last_used_at = now();
+end;
+$$;
+
+-- 로그인한 사용자만 호출 가능 (anon 차단)
+revoke execute on function register_device_token(text, text, text) from public, anon;
+grant execute on function register_device_token(text, text, text) to authenticated;
+
+-- =============================================
+-- 6. 회원탈퇴 소프트 딜리트 함수
+-- =============================================
+create or replace function delete_user()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.profiles
+  set
+    is_deleted = true,
+    deleted_at = now()
+  where id = auth.uid();
+
+  delete from public.device_tokens where user_id = auth.uid();
 end;
 $$;

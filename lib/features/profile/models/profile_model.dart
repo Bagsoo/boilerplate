@@ -45,18 +45,21 @@ class ProfileModel {
     DateTime? privacyAgreedAt,
     bool? pushNotificationEnabled,
     bool? marketingNotificationEnabled,
+    bool clearProfileImage = false,
   }) {
     return ProfileModel(
       id: id,
       email: email,
       nickname: nickname ?? this.nickname,
-      profileImage: profileImage ?? this.profileImage,
       termsAgreedAt: termsAgreedAt ?? this.termsAgreedAt,
       privacyAgreedAt: privacyAgreedAt ?? this.privacyAgreedAt,
       pushNotificationEnabled:
           pushNotificationEnabled ?? this.pushNotificationEnabled,
       marketingNotificationEnabled:
           marketingNotificationEnabled ?? this.marketingNotificationEnabled,
+      profileImage: clearProfileImage
+          ? null
+          : (profileImage ?? this.profileImage),
     );
   }
 }

@@ -37,7 +37,12 @@ class ProfileRepository {
     return await _service.uploadAvatar();
   }
 
-  // 프로필 이미지 삭제
+  // 프로필 이미지 비우기(컬럼 삭제)
+  Future<void> removeAvatar() async {
+    await _service.removeAvatar();
+  }
+
+  // 프로필 이미지 삭제(탈퇴용)
   Future<void> deleteAvatar() async {
     await _service.deleteAvatar();
   }

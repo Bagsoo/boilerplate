@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../l10n/l10n_extension.dart';
 
 class EmptyView extends StatelessWidget {
-  final String title;
+  final String? title;
   final String? description;
   final IconData? icon;
   final String? buttonLabel;
@@ -9,7 +10,7 @@ class EmptyView extends StatelessWidget {
 
   const EmptyView({
     super.key,
-    this.title = '데이터가 없어요',
+    this.title,
     this.description,
     this.icon,
     this.buttonLabel,
@@ -31,20 +32,20 @@ class EmptyView extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.08),
+                color: theme.colorScheme.primary.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon ?? Icons.inbox_outlined,
                 size: 36,
-                color: theme.colorScheme.primary.withOpacity(0.5),
+                color: theme.colorScheme.primary.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 20),
 
             // 타이틀
             Text(
-              title,
+              title ?? context.l10n.commonEmptyTitle,
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -60,7 +61,7 @@ class EmptyView extends StatelessWidget {
                 description!,
                 style: TextStyle(
                   fontSize: 14,
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,

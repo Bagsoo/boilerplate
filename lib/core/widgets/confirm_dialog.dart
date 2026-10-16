@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import '../../l10n/l10n_extension.dart';
 
 class ConfirmDialog extends StatelessWidget {
   final String title;
   final String content;
-  final String confirmLabel;
-  final String cancelLabel;
+  final String? confirmLabel;
+  final String? cancelLabel;
   final bool isDanger;
 
   const ConfirmDialog({
     super.key,
     required this.title,
     required this.content,
-    this.confirmLabel = '확인',
-    this.cancelLabel = '취소',
+    this.confirmLabel,
+    this.cancelLabel,
     this.isDanger = false,
   });
 
@@ -21,8 +22,8 @@ class ConfirmDialog extends StatelessWidget {
     BuildContext context, {
     required String title,
     required String content,
-    String confirmLabel = '확인',
-    String cancelLabel = '취소',
+    String? confirmLabel,
+    String? cancelLabel,
     bool isDanger = false,
   }) async {
     final result = await showDialog<bool>(
@@ -60,7 +61,7 @@ class ConfirmDialog extends StatelessWidget {
               content,
               style: TextStyle(
                 fontSize: 14,
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 height: 1.5,
               ),
             ),
@@ -77,7 +78,7 @@ class ConfirmDialog extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Text(cancelLabel),
+                      child: Text(cancelLabel ?? context.l10n.cancel),
                     ),
                   ),
                 ),
@@ -96,7 +97,7 @@ class ConfirmDialog extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Text(confirmLabel),
+                      child: Text(confirmLabel ?? context.l10n.commonConfirm),
                     ),
                   ),
                 ),

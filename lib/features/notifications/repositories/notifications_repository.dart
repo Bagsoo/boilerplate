@@ -6,18 +6,20 @@ class NotificationsRepository {
 
   // 알림 목록 조회 (페이지네이션)
   Future<List<Map<String, dynamic>>> getNotifications({
-    required int from,
-    required int to,
+    required int limit,
+    String? before, // 이 created_at보다 오래된 것만
   }) async {
     final user = _client.auth.currentUser;
     if (user == null) return [];
 
-    final data = await _client
+    var query = _client
         .from('notifications')
         .select()
-        .eq('receiver_id', user.id)
-        .order('created_at', ascending: false)
-        .range(from, to);
+        .eq('receiver_id', user.id);
+
+    if (before != null) query = query.lt('created_at', before);
+
+    final data = await query.order('created_at', ascending: false).limit(limit);
 
     return List<Map<String, dynamic>>.from(data);
   }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -68,23 +69,24 @@ void main() async {
         FirebaseMessaging.onBackgroundMessage(
           _firebaseMessagingBackgroundHandler,
         );
-        // ③ 프로덕션에서만 Crashlytics 활성화
-        if (AppConfig.enableCrashlytics) {
-          await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
-            true,
-          );
-        } else {
-          await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
-            false,
-          );
-        }
+
+        await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+          AppConfig.enableCrashlytics,
+        );
+
+        // 환경/버전 custom key
+        final info = await PackageInfo.fromPlatform();
+        final crashlytics = FirebaseCrashlytics.instance;
+        await crashlytics.setCustomKey('env', AppConfig.envLabel);
+        await crashlytics.setCustomKey('app_version', info.version);
+        await crashlytics.setCustomKey('build_number', info.buildNumber);
       } catch (e) {
         logger.w('Firebase 초기화 실패: $e');
       }
 
       await Supabase.initialize(
         url: dotenv.env['SUPABASE_URL']!,
-        anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+        publishableKey: dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
       );
 
       FlutterNativeSplash.remove();
@@ -118,6 +120,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         ref.read(notificationsProvider.notifier).clear();
         router.go('/login');
       },
+      onPasswordRecovery: () => router.go('/reset-password'),
     );
 
     // 강제 업데이트 체크
@@ -149,7 +152,13 @@ class _MyAppState extends ConsumerState<MyApp> {
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
       builder: (context, child) {
-        return OfflineBanner(child: child!);
+        final content = OfflineBanner(child: child!);
+        if (!AppConfig.isDev) return content;
+        return Banner(
+          message: 'DEV',
+          location: BannerLocation.topStart,
+          child: content,
+        );
       },
     );
   }

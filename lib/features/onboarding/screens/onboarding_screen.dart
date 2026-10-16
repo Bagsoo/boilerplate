@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/onboarding_item.dart';
+import '../../../l10n/l10n_extension.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -15,21 +16,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
 
   // ① 온보딩 데이터 — 이미지/문구만 교체하면 됨
-  final _pages = const [
+  List<OnboardingItem> get _pages => [
     OnboardingItem(
       image: 'assets/onboarding/onboarding_1.png',
-      title: '환영합니다',
-      description: '앱을 시작하기 전에\n몇 가지를 소개할게요.',
+      title: context.l10n.onboardingTitle1,
+      description: context.l10n.onboardingDescription1,
     ),
     OnboardingItem(
       image: 'assets/onboarding/onboarding_2.png',
-      title: '쉽고 빠르게',
-      description: '간편하게 시작하고\n필요한 것을 바로 찾아보세요.',
+      title: context.l10n.onboardingTitle2,
+      description: context.l10n.onboardingDescription2,
     ),
     OnboardingItem(
       image: 'assets/onboarding/onboarding_3.png',
-      title: '지금 시작하세요',
-      description: '모든 준비가 됐어요.\n지금 바로 시작해볼까요?',
+      title: context.l10n.onboardingTitle3,
+      description: context.l10n.onboardingDescription3,
     ),
   ];
 
@@ -75,9 +76,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: TextButton(
                     onPressed: _isLastPage ? null : _finish,
                     child: Text(
-                      '건너뛰기',
+                      context.l10n.onboardingSkip,
                       style: TextStyle(
-                        color: theme.colorScheme.onSurface.withOpacity(0.5),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
@@ -111,7 +112,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   decoration: BoxDecoration(
                     color: _currentPage == index
                         ? theme.colorScheme.primary
-                        : theme.colorScheme.primary.withOpacity(0.2),
+                        : theme.colorScheme.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -160,7 +161,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                         child: Text(
-                          _isLastPage ? '시작하기' : '다음',
+                          _isLastPage
+                              ? context.l10n.onboardingStart
+                              : context.l10n.onboardingNext,
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -204,13 +207,13 @@ class _OnboardingPage extends StatelessWidget {
               // 이미지 없을 때 플레이스홀더
               errorBuilder: (context, error, stackTrace) => Container(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.08),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Icon(
                   Icons.image_outlined,
                   size: 80,
-                  color: theme.colorScheme.primary.withOpacity(0.3),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
                 ),
               ),
             ),
@@ -235,7 +238,7 @@ class _OnboardingPage extends StatelessWidget {
             item.description,
             style: TextStyle(
               fontSize: 15,
-              color: theme.colorScheme.onSurface.withOpacity(0.55),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
               height: 1.6,
             ),
             textAlign: TextAlign.center,

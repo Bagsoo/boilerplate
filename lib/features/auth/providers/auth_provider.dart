@@ -1,15 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../repositories/auth_repository.dart';
+import '../../../core/errors/app_error.dart';
 
 class AuthState {
   final bool isLoading;
-  final String? error;
+  final AppErrorType? error; // String? → AppErrorType?
 
   const AuthState({this.isLoading = false, this.error});
 
-  AuthState copyWith({bool? isLoading, String? error}) {
-    return AuthState(isLoading: isLoading ?? this.isLoading, error: error);
+  AuthState copyWith({
+    bool? isLoading,
+    AppErrorType? error,
+    bool clearError = false,
+  }) {
+    return AuthState(
+      isLoading: isLoading ?? this.isLoading,
+      error: clearError ? null : (error ?? this.error),
+    );
   }
 }
 
@@ -21,15 +28,15 @@ class AuthNotifier extends Notifier<AuthState> {
   late final _repository = ref.read(authRepositoryProvider);
 
   Future<bool> signIn({required String email, required String password}) async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await _repository.signIn(
         email: email,
         password: password,
       );
       return response.user != null;
-    } on AuthException catch (e) {
-      state = state.copyWith(error: e.message);
+    } catch (e) {
+      state = state.copyWith(error: mapToAppError(e));
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
@@ -37,12 +44,12 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<bool> signInWithGoogle() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await _repository.signInWithGoogle();
       return response.user != null;
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: mapToAppError(e));
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
@@ -50,12 +57,12 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<bool> signInWithApple() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await _repository.signInWithApple();
       return response.user != null;
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: mapToAppError(e));
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
@@ -67,7 +74,7 @@ class AuthNotifier extends Notifier<AuthState> {
     required String password,
     required String nickname,
   }) async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true); // clearError 추가
     try {
       final response = await _repository.signUp(
         email: email,
@@ -75,11 +82,8 @@ class AuthNotifier extends Notifier<AuthState> {
         nickname: nickname,
       );
       return response.user != null;
-    } on AuthException catch (e) {
-      state = state.copyWith(error: _translateError(e.message));
-      return false;
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: mapToAppError(e));
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
@@ -96,27 +100,45 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<bool> deleteAccount() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       await _repository.deleteAccount();
       return true;
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: mapToAppError(e));
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
     }
   }
 
-  String _translateError(String message) {
-    if (message.contains('already registered') ||
-        message.contains('User already registered')) {
-      return '이미 사용 중인 이메일이에요.';
+  Future<bool> sendPasswordResetEmail(String email) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await _repository.sendPasswordResetEmail(email);
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: mapToAppError(e));
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
     }
-    return message;
   }
 
-  void clearError() => state = state.copyWith(error: null);
+  Future<bool> updatePassword(String newPassword) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await _repository.updatePassword(newPassword);
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: mapToAppError(e));
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  void clearError() => state = state.copyWith(clearError: true);
 }
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {

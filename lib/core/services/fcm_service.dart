@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/logger.dart';
+import 'notification_permission_service.dart';
 
 // router에 접근하기 위한 navigatorKey
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -11,6 +12,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 class FcmService {
   final _messaging = FirebaseMessaging.instance;
   final _client = Supabase.instance.client;
+  static bool _listenersRegistered = false;
 
   // 포그라운드 메시지 처리
   void _handleForegroundMessage(RemoteMessage message) async {
@@ -45,28 +47,33 @@ class FcmService {
     }
   }
 
-  // ① 권한 요청 + 토큰 저장
+  // 권한이 이미 허용된 경우에만 토큰 저장 + 리스너 등록 (팝업을 띄우지 않음)
   Future<void> initialize() async {
-    // 권한 요청
-    final settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    final state = await NotificationPermissionService().getState();
+    if (state != NotificationPermissionState.granted) return;
+    await _setup();
+  }
 
-    if (settings.authorizationStatus == AuthorizationStatus.denied) return;
+  // 사전 설명 후 허용을 눌렀을 때 호출: 시스템 팝업 → 허용 시 초기화
+  Future<bool> requestPermissionAndInitialize() async {
+    final granted = await NotificationPermissionService().request();
+    if (!granted) return false;
+    await _setup();
+    return true;
+  }
 
-    // FCM 토큰 가져오기
+  Future<void> _setup() async {
+    // iOS 포그라운드 표시 등을 위해 firebase 쪽 권한 상태도 동기화
+    await _messaging.requestPermission(alert: true, badge: true, sound: true);
+
     final token = await _messaging.getToken();
     if (token != null) await _saveToken(token);
 
-    // 토큰 갱신 시 자동 업데이트
+    if (_listenersRegistered) return; // 중복 등록 방지
+    _listenersRegistered = true;
+
     _messaging.onTokenRefresh.listen(_saveToken);
-
-    // 포그라운드 메시지 처리
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-
-    // 앱이 백그라운드에서 열릴 때
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
     await _checkInitialMessage();
@@ -91,15 +98,19 @@ class FcmService {
       deviceName = iosInfo.name;
     }
 
-    // upsert로 토큰 저장 (있으면 업데이트, 없으면 insert)
-    await _client.from('device_tokens').upsert({
-      'user_id': user.id,
-      'token': token,
-      'platform': platform,
-      'device_name': deviceName,
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-      'last_used_at': DateTime.now().toUtc().toIso8601String(),
-    }, onConflict: 'user_id, token');
+    // RPC로 토큰 등록 (다른 계정에 남은 같은 토큰은 서버에서 정리)
+    try {
+      await _client.rpc(
+        'register_device_token',
+        params: {
+          'p_token': token,
+          'p_platform': platform,
+          'p_device_name': deviceName,
+        },
+      );
+    } catch (e) {
+      logger.w('토큰 등록 실패: $e');
+    }
   }
 
   // ⑤ 로그아웃 시 토큰 삭제

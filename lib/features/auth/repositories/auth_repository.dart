@@ -57,6 +57,12 @@ class AuthRepository {
     return profile['terms_agreed_at'] != null;
   }
 
+  Future<void> sendPasswordResetEmail(String email) =>
+      _authService.sendPasswordResetEmail(email);
+
+  Future<void> updatePassword(String newPassword) =>
+      _authService.updatePassword(newPassword);
+
   // 현재 유저
   User? get currentUser => _client.auth.currentUser;
 

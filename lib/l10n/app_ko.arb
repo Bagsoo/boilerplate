@@ -22,11 +22,63 @@
             }
         }
     },
+    "save": "저장",
+    "cancel": "취소",
+    "search": "검색",
+    "logout": "로그아웃",
     "settingsLanguage": "언어",
     "languageSystem": "시스템 설정 따름",
     "darkmode": "다크모드",
     "setting": "세팅",
     "profile": "프로필",
+    "email": "이메일",
+    "password": "비밀번호",
+    "nickname": "닉네임",
+    "sign_in": "로그인",
+    "sign_up": "회원가입",
+    "loginFailed": "로그인 실패",
+    "loginWithGoogle": "구글로 로그인",
+    "loginAppleFailed": "애플 로그인 실패",
+    "loginWithApple": "Apple로 로그인",
+    "validationEmailRequired": "이메일을 입력해주세요.",
+    "validationEmailInvalid": "올바른 이메일 형식이 아니에요.",
+    "validationPasswordRequired": "비밀번호를 입력해주세요.",
+    "validationPasswordMinLength": "비밀번호는 {min}자 이상이어야 해요.",
+    "@validationPasswordMinLength": {
+        "placeholders": {
+            "min": {
+                "type": "int"
+            }
+        }
+    },
+    "validationPasswordSpecialChar": "특수문자를 1개 이상 포함해주세요.",
+    "validationPasswordConfirmRequired": "비밀번호를 한 번 더 입력해주세요.",
+    "validationPasswordMismatch": "비밀번호가 일치하지 않아요.",
+    "validationNicknameRequired": "닉네임을 입력해주세요.",
+    "validationNicknameMinLength": "닉네임은 {min}자 이상이어야 해요.",
+    "@validationNicknameMinLength": {
+        "placeholders": {
+            "min": {
+                "type": "int"
+            }
+        }
+    },
+    "signupPasswordConfirm": "비밀번호 확인",
+    "signupHaveAccount": "이미 계정이 있어요? 로그인",
+    "notificationsTitle": "알림",
+    "notificationsMarkAllRead": "전체 읽음",
+    "notificationsEmptyTitle": "알림이 없어요",
+    "notificationsEmptyDescription": "새로운 알림이 오면 여기에 표시돼요",
+    "notificationsAllLoaded": "모든 알림을 불러왔어요",
+    "onboardingSkip": "건너뛰기",
+    "onboardingNext": "다음",
+    "onboardingStart": "시작하기",
+    "onboardingTitle1": "환영합니다",
+    "onboardingDescription1": "앱을 시작하기 전에\n몇 가지를 소개할게요.",
+    "onboardingTitle2": "쉽고 빠르게",
+    "onboardingDescription2": "간편하게 시작하고\n필요한 것을 바로 찾아보세요.",
+    "onboardingTitle3": "지금 시작하세요",
+    "onboardingDescription3": "모든 준비가 됐어요.\n지금 바로 시작해볼까요?",
     "profileEmail": "이메일: {email}",
     "@profileEmail": {
         "description": "프로필탭 유저 이메일",
@@ -44,5 +96,158 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "profileEmailCopied": "이메일이 복사되었어요",
+    "profileNewNickname": "새 닉네임",
+    "profileUpdateFailed": "업데이트 실패: {error}",
+    "@profileUpdateFailed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "searchRecentEmpty": "최근 검색어가 없어요",
+    "searchRecentTitle": "최근 검색어",
+    "clearAll": "전체 삭제",
+    "searchNoResults": "검색 결과가 없어요",
+    "termsTitle": "서비스 이용 동의",
+    "termsIntro": "서비스 이용을 위해\n아래 약관에 동의해주세요.",
+    "termsAgreeAll": "전체 동의",
+    "termsServiceAgree": "이용약관 동의 (필수)",
+    "termsPrivacyAgree": "개인정보처리방침 동의 (필수)",
+    "termsView": "보기",
+    "termsAgreeAndStart": "동의하고 시작하기",
+    "termsSignupFailed": "회원가입 실패",
+    "termsErrorOccurred": "오류가 발생했어요: {error}",
+    "@termsErrorOccurred": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsProfileImage": "프로필 이미지",
+    "settingsPickFromGallery": "갤러리에서 선택",
+    "settingsDeleteImage": "이미지 삭제",
+    "settingsTapToChangeImage": "탭하여 이미지 변경",
+    "settingsPush": "푸시 알림",
+    "settingsPushDescription": "새로운 알림을 받아요",
+    "settingsMarketing": "마케팅 알림",
+    "settingsMarketingDescription": "혜택 및 이벤트 소식을 받아요",
+    "settingsReview": "리뷰 남기기",
+    "settingsDeleteAccount": "회원탈퇴",
+    "settingsVersion": "버전 {version}",
+    "@settingsVersion": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsDeleteAccountConfirm": "정말 탈퇴하시겠어요?\n모든 데이터가 삭제되며 복구할 수 없어요.",
+    "settingsDeleteAccountAction": "탈퇴하기",
+    "settingsDeleteAccountFailed": "탈퇴 실패",
+    "errorInvalidCredentials": "이메일 또는 비밀번호가 올바르지 않아요.",
+    "errorEmailAlreadyRegistered": "이미 사용 중인 이메일이에요.",
+    "errorEmailNotConfirmed": "이메일 인증이 완료되지 않았어요.",
+    "errorAccountDeleted": "탈퇴한 계정이에요.",
+    "errorNetwork": "네트워크 연결을 확인해주세요.",
+    "errorWeakPassword": "비밀번호가 너무 약해요.",
+    "errorTooManyRequests": "요청이 너무 많아요. 잠시 후 다시 시도해주세요.",
+    "errorUnknown": "문제가 발생했어요. 잠시 후 다시 시도해주세요.",
+    "commonConfirm": "확인",
+    "commonRetry": "다시 시도",
+    "commonErrorTitle": "오류가 발생했어요",
+    "commonErrorDescription": "잠시 후 다시 시도해주세요",
+    "commonEmptyTitle": "데이터가 없어요",
+    "commonOffline": "인터넷 연결이 없어요",
+    "navHome": "홈",
+    "navProfile": "프로필",
+    "navSettings": "설정",
+    "timeJustNow": "방금 전",
+    "timeMinutesAgo": "{count}분 전",
+    "@timeMinutesAgo": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "timeHoursAgo": "{count}시간 전",
+    "@timeHoursAgo": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "timeDaysAgo": "{count}일 전",
+    "@timeDaysAgo": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "timeWeeksAgo": "{count}주 전",
+    "@timeWeeksAgo": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "timeMonthsAgo": "{count}개월 전",
+    "@timeMonthsAgo": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "timeYearsAgo": "{count}년 전",
+    "@timeYearsAgo": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "timeToday": "오늘",
+    "timeYesterday": "어제",
+    "commonCopied": "복사되었어요",
+    "commonLinkOpenFailed": "링크를 열 수 없어요",
+    "forceUpdateTitle": "업데이트 필요",
+    "forceUpdateContent": "새로운 버전이 출시되었어요.\n계속 사용하려면 업데이트해주세요.",
+    "forceUpdateAction": "업데이트",
+    "forgotPasswordLink": "비밀번호를 잊으셨나요?",
+    "forgotPasswordTitle": "비밀번호 찾기",
+    "forgotPasswordDescription": "가입한 이메일을 입력하면\n비밀번호 재설정 링크를 보내드려요.",
+    "forgotPasswordSend": "재설정 메일 보내기",
+    "forgotPasswordSent": "가입된 이메일이라면 재설정 링크를 보냈어요.\n메일함을 확인해주세요.",
+    "resetPasswordTitle": "새 비밀번호 설정",
+    "resetPasswordNew": "새 비밀번호",
+    "resetPasswordSubmit": "비밀번호 변경",
+    "resetPasswordSuccess": "비밀번호가 변경되었어요",
+    "notifPermissionTitle": "알림을 켤까요?",
+    "notifPermissionDescription": "새로운 소식과 중요한 알림을\n놓치지 않도록 알려드려요.",
+    "notifPermissionAllow": "알림 켜기",
+    "notifPermissionLater": "나중에",
+    "notifPermissionDeniedTitle": "알림이 꺼져 있어요",
+    "notifPermissionDeniedContent": "기기 설정에서 알림 권한을 허용해야\n알림을 받을 수 있어요.",
+    "notifPermissionOpenSettings": "설정 열기",
+    "settingsPushOsOff": "기기 설정에서 알림이 꺼져 있어요",
+    "errorLinkExpired": "링크가 만료되었어요. 다시 요청해주세요.",
+    "permAllow": "허용하기",
+    "permLater": "나중에",
+    "permDeniedTitle": "권한이 필요해요",
+    "permDeniedContent": "기기 설정에서 권한을 허용해야\n이 기능을 사용할 수 있어요.",
+    "permOpenSettings": "설정 열기",
+    "permCameraTitle": "카메라 접근이 필요해요",
+    "permCameraDescription": "사진을 촬영하려면\n카메라 권한이 필요해요.",
+    "permPhotosTitle": "사진 접근이 필요해요",
+    "permPhotosDescription": "사진을 선택하려면\n사진 접근 권한이 필요해요.",
+    "permLocationTitle": "위치 접근이 필요해요",
+    "permLocationDescription": "내 주변 정보를 보여드리려면\n위치 권한이 필요해요."
 }

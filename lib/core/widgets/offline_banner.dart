@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/connectivity_provider.dart';
+import '../../l10n/l10n_extension.dart';
 
 class OfflineBanner extends ConsumerWidget {
   final Widget child;
@@ -20,9 +21,9 @@ class OfflineBanner extends ConsumerWidget {
           color: Colors.red,
           child: isConnected
               ? const SizedBox()
-              : const Center(
+              : Center(
                   child: Text(
-                    '인터넷 연결이 없어요',
+                    context.l10n.commonOffline,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 12,

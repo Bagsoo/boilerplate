@@ -41,38 +41,32 @@ with check (auth.uid() = id);
 -- =============================================
 -- 4. 회원가입 시 profiles 자동 생성 트리거
 -- =============================================
-create function public.handle_new_user()
-returns trigger as $$
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
 begin
   insert into public.profiles (id, nickname)
-  values (new.id, new.raw_user_meta_data->>'nickname');
+  values (
+    new.id,
+    coalesce(
+      new.raw_user_meta_data->>'nickname',
+      new.raw_user_meta_data->>'name',
+      split_part(new.email, '@', 1)
+    )
+  );
   return new;
 end;
-$$ language plpgsql security definer;
+$$;
 
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
 -- =============================================
--- 5. 회원탈퇴 소프트 딜리트 함수
--- =============================================
-create or replace function delete_user()
-returns void
-language plpgsql
-security definer
-as $$
-begin
-  update public.profiles
-  set
-    is_deleted = true,
-    deleted_at = now()
-  where id = auth.uid();
-end;
-$$;
-
--- =============================================
--- 6. Storage 버킷 정책
+-- 5. Storage 버킷 정책
 -- =============================================
 
 -- 본인 파일만 업로드 가능
@@ -86,6 +80,13 @@ with check (
 -- 본인 파일만 수정 가능
 create policy "본인 아바타 수정"
 on storage.objects for update
+using (
+  bucket_id = 'avatars' and
+  auth.uid()::text = (storage.foldername(name))[1]
+);
+
+create policy "본인 아바타 삭제"
+on storage.objects for delete
 using (
   bucket_id = 'avatars' and
   auth.uid()::text = (storage.foldername(name))[1]

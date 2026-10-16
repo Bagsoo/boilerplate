@@ -22,7 +22,7 @@ class ImageViewer extends StatelessWidget {
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black,
-        pageBuilder: (_, __, ___) => ImageViewer(
+        pageBuilder: (_, _, _) => ImageViewer(
           imageUrl: imageUrl,
           heroTag: heroTag,
         ),

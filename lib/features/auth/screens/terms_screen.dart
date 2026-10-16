@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/errors/app_error_l10n.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/profile_provider.dart';
 import '../../../core/services/fcm_service.dart';
 import '../../../core/utils/url_util.dart';
+import '../../../core/widgets/app_snack_bar.dart';
 import '../../../features/profile/repositories/profile_repository.dart';
+import '../../../l10n/l10n_extension.dart';
+import '../../../core/errors/app_error.dart';
 
 class TermsScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> extra;
@@ -47,9 +51,14 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
         if (!success) {
           final error = ref.read(authProvider).error;
           if (!mounted) return;
-          ScaffoldMessenger.of(
+          AppSnackBar.show(
             context,
-          ).showSnackBar(SnackBar(content: Text(error ?? '회원가입 실패')));
+            message: error?.message(context) ?? context.l10n.termsSignupFailed,
+            type: SnackBarType.error,
+          );
+          if (error == AppErrorType.emailAlreadyRegistered) {
+            context.pop(); // 가입 화면으로 복귀
+          }
           return;
         }
       }
@@ -64,27 +73,28 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
       if (!mounted) return;
       context.go('/home');
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
+      AppSnackBar.show(
         context,
-      ).showSnackBar(SnackBar(content: Text('오류가 발생했어요: $e')));
+        message: mapToAppError(e).message(context),
+        type: SnackBarType.error,
+      );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('서비스 이용 동의')),
+      appBar: AppBar(title: Text(context.l10n.termsTitle)),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '서비스 이용을 위해\n아래 약관에 동의해주세요.',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              context.l10n.termsIntro,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 32),
 
@@ -95,9 +105,9 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
                 _termsAgreed = value!;
                 _privacyAgreed = value;
               }),
-              title: const Text(
-                '전체 동의',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              title: Text(
+                context.l10n.termsAgreeAll,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             const Divider(),
@@ -106,13 +116,13 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
             CheckboxListTile(
               value: _termsAgreed,
               onChanged: (value) => setState(() => _termsAgreed = value!),
-              title: const Text('이용약관 동의 (필수)'),
+              title: Text(context.l10n.termsServiceAgree),
               secondary: TextButton(
                 onPressed: () => UrlUtil.launch(
                   context,
                   'https://www.google.com', // ← 나중에 이용약관 URL로 교체
                 ),
-                child: const Text('보기'),
+                child: Text(context.l10n.termsView),
               ),
             ),
 
@@ -120,13 +130,13 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
             CheckboxListTile(
               value: _privacyAgreed,
               onChanged: (value) => setState(() => _privacyAgreed = value!),
-              title: const Text('개인정보처리방침 동의 (필수)'),
+              title: Text(context.l10n.termsPrivacyAgree),
               secondary: TextButton(
                 onPressed: () => UrlUtil.launch(
                   context,
                   'https://www.naver.com', // ← 나중에 개인정보처리방침 URL로 교체
                 ),
-                child: const Text('보기'),
+                child: Text(context.l10n.termsView),
               ),
             ),
 
@@ -136,7 +146,7 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
               onPressed: _canProceed && !_isLoading ? _agree : null,
               child: _isLoading
                   ? const CircularProgressIndicator()
-                  : const Text('동의하고 시작하기'),
+                  : Text(context.l10n.termsAgreeAndStart),
             ),
           ],
         ),

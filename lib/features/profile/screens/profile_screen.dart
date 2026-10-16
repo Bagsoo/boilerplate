@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pt/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/profile_provider.dart';
 import '../../../core/widgets/avatar_image.dart';
@@ -8,6 +7,9 @@ import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/app_snack_bar.dart';
 import '../../../core/utils/clipboard_util.dart';
 import '../../../core/widgets/skeleton_loader.dart';
+import '../../../l10n/l10n_extension.dart';
+import '../../../core/errors/app_error.dart';
+import '../../../core/errors/app_error_l10n.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -34,23 +36,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       await ref
           .read(profileProvider.notifier)
           .updateNickname(_nicknameController.text.trim());
+      if (!mounted) return;
       setState(() => _isEditing = false);
     } catch (e) {
       if (!mounted) return;
       AppSnackBar.show(
         context,
-        message: '업데이트 실패: $e',
+        message: mapToAppError(e).message(context),
         type: SnackBarType.error,
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(profileProvider);
-    final l10n = AppLocalizations.of(context)!;
 
     if (profile == null || _isLoading) {
       return const SkeletonProfile();
@@ -67,16 +69,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onLongPress: () => ClipboardUtil.copy(
               context,
               profile.email,
-              message: '이메일이 복사되었어요',
+              message: context.l10n.profileEmailCopied,
             ),
-            child: Text(l10n.profileEmail(profile.email)),
+            child: Text(context.l10n.profileEmail(profile.email)),
           ),
           const SizedBox(height: 8),
 
           if (!_isEditing) ...[
             Row(
               children: [
-                Text(l10n.profileNickname(profile.nickname)),
+                Text(context.l10n.profileNickname(profile.nickname)),
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
@@ -90,7 +92,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ] else ...[
             AppTextField(
               controller: _nicknameController,
-              label: '새 닉네임',
+              label: context.l10n.profileNewNickname,
               prefixIcon: const Icon(Icons.person_outline),
             ),
             const SizedBox(height: 16),
@@ -98,7 +100,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 Expanded(
                   child: AppButton(
-                    label: '저장',
+                    label: context.l10n.save,
                     isLoading: _isLoading,
                     onPressed: _updateNickname,
                   ),
@@ -106,7 +108,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: AppButton(
-                    label: '취소',
+                    label: context.l10n.cancel,
                     type: AppButtonType.ghost,
                     onPressed: () => setState(() => _isEditing = false),
                   ),

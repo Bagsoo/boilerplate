@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/auth/providers/auth_provider.dart';
+import '../../../l10n/l10n_extension.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 
@@ -22,29 +23,41 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _passwordConfirmVisible = false;
 
   String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) return '이메일을 입력해주세요.';
+    if (value == null || value.isEmpty) {
+      return context.l10n.validationEmailRequired;
+    }
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) return '올바른 이메일 형식이 아니에요.';
+    if (!emailRegex.hasMatch(value)) return context.l10n.validationEmailInvalid;
     return null;
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return '비밀번호를 입력해주세요.';
-    if (value.length < 8) return '비밀번호는 8자 이상이어야 해요.';
+    if (value == null || value.isEmpty) {
+      return context.l10n.validationPasswordRequired;
+    }
+    if (value.length < 8) return context.l10n.validationPasswordMinLength(8);
     final specialChar = RegExp(r'[!@#$%^&*(),.?":{}|<>]');
-    if (!specialChar.hasMatch(value)) return '특수문자를 1개 이상 포함해주세요.';
+    if (!specialChar.hasMatch(value)) {
+      return context.l10n.validationPasswordSpecialChar;
+    }
     return null;
   }
 
   String? _validatePasswordConfirm(String? value) {
-    if (value == null || value.isEmpty) return '비밀번호를 한 번 더 입력해주세요.';
-    if (value != _passwordController.text) return '비밀번호가 일치하지 않아요.';
+    if (value == null || value.isEmpty) {
+      return context.l10n.validationPasswordConfirmRequired;
+    }
+    if (value != _passwordController.text) {
+      return context.l10n.validationPasswordMismatch;
+    }
     return null;
   }
 
   String? _validateNickname(String? value) {
-    if (value == null || value.isEmpty) return '닉네임을 입력해주세요.';
-    if (value.length < 2) return '닉네임은 2자 이상이어야 해요.';
+    if (value == null || value.isEmpty) {
+      return context.l10n.validationNicknameRequired;
+    }
+    if (value.length < 2) return context.l10n.validationNicknameMinLength(2);
     return null;
   }
 
@@ -75,7 +88,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final isLoading = ref.watch(authProvider).isLoading;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('회원가입')),
+      appBar: AppBar(title: Text(context.l10n.sign_up)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -84,7 +97,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             children: [
               AppTextField(
                 controller: _emailController,
-                label: '이메일',
+                label: context.l10n.email,
                 keyboardType: TextInputType.emailAddress,
                 validator: _validateEmail,
                 prefixIcon: const Icon(Icons.email_outlined),
@@ -93,7 +106,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
               AppTextField(
                 controller: _passwordController,
-                label: '비밀번호',
+                label: context.l10n.password,
                 obscureText: !_passwordVisible,
                 validator: _validatePassword,
                 prefixIcon: const Icon(Icons.lock_outline),
@@ -109,7 +122,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
               AppTextField(
                 controller: _passwordConfirmController,
-                label: '비밀번호 확인',
+                label: context.l10n.signupPasswordConfirm,
                 obscureText: !_passwordConfirmVisible,
                 validator: _validatePasswordConfirm,
                 prefixIcon: const Icon(Icons.lock_outline),
@@ -128,14 +141,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
               AppTextField(
                 controller: _nicknameController,
-                label: '닉네임',
+                label: context.l10n.nickname,
                 validator: _validateNickname,
                 prefixIcon: const Icon(Icons.person_outline),
               ),
               const SizedBox(height: 24),
 
               AppButton(
-                label: '회원가입',
+                label: context.l10n.sign_up,
                 isLoading: isLoading,
                 onPressed: _goToTerms,
                 icon: Icons.arrow_forward,
@@ -143,7 +156,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => context.go('/login'),
-                child: const Text('이미 계정이 있어요? 로그인'),
+                child: Text(context.l10n.signupHaveAccount),
               ),
             ],
           ),

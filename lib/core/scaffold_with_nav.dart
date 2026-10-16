@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../features/notifications/providers/notifications_provider.dart';
 import 'widgets/app_search_bar.dart';
+import '../l10n/l10n_extension.dart';
 
 class ScaffoldWithNav extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -25,7 +26,11 @@ class _ScaffoldWithNavState extends ConsumerState<ScaffoldWithNav> {
   @override
   Widget build(BuildContext context) {
     final unreadCount = ref.watch(unreadCountProvider);
-    final titles = ['홈', '프로필', '설정'];
+    final titles = [
+      context.l10n.navHome,
+      context.l10n.navProfile,
+      context.l10n.setting,
+    ];
     final location = GoRouterState.of(context).matchedLocation;
     final isHome = location.startsWith('/home');
     final isProfile = location.startsWith('/profile');
@@ -36,7 +41,7 @@ class _ScaffoldWithNavState extends ConsumerState<ScaffoldWithNav> {
             ? GestureDetector(
                 // ← 홈일 때 검색바
                 onTap: () => context.push('/search'),
-                child: AppSearchBar(hint: '검색'),
+                child: const AppSearchBar(),
               )
             : Text(titles[widget.navigationShell.currentIndex]),
         actions: [
@@ -79,9 +84,15 @@ class _ScaffoldWithNavState extends ConsumerState<ScaffoldWithNav> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: widget.navigationShell.currentIndex,
         onTap: (index) => widget.navigationShell.goBranch(index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '프로필'),
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: context.l10n.navHome,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: context.l10n.navProfile,
+          ),
         ],
       ),
     );

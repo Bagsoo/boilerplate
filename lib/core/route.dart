@@ -11,6 +11,8 @@ import '../features/auth/screens/terms_screen.dart';
 import '../features/notifications/screens/notification_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/search/screens/search_screen.dart';
+import '../features/auth/screens/forgot_password_screen.dart';
+import '../features/auth/screens/reset_password_screen.dart';
 import 'scaffold_with_nav.dart';
 
 final router = GoRouter(
@@ -32,8 +34,10 @@ final router = GoRouter(
     final isAuthRoute =
         state.matchedLocation == '/login' ||
         state.matchedLocation == '/signup' ||
-        state.matchedLocation == '/terms';
+        state.matchedLocation == '/terms' ||
+        state.matchedLocation == '/forgot-password';
 
+    if (state.matchedLocation == '/reset-password') return null;
     if (!isLoggedIn && !isAuthRoute) return '/login';
     if (isLoggedIn && isAuthRoute) return '/home';
     return null;
@@ -41,6 +45,14 @@ final router = GoRouter(
   routes: [
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/signup', builder: (context, state) => const SignupScreen()),
+    GoRoute(
+      path: '/forgot-password',
+      builder: (context, state) => const ForgotPasswordScreen(),
+    ),
+    GoRoute(
+      path: '/reset-password',
+      builder: (context, state) => const ResetPasswordScreen(),
+    ),
     GoRoute(
       path: '/terms',
       builder: (context, state) {

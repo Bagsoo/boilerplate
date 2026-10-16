@@ -77,7 +77,7 @@ class SkeletonCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -136,8 +136,8 @@ class SkeletonNotificationList extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemCount: itemCount,
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemBuilder: (_, __) => const SkeletonListItem(),
+      separatorBuilder: (_, _) => const Divider(height: 1),
+      itemBuilder: (_, _) => const SkeletonListItem(),
     );
   }
 }

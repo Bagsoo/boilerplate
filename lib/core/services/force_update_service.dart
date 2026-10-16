@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/version_util.dart';
+import '../../l10n/l10n_extension.dart';
 
 class ForceUpdateService {
   final _client = Supabase.instance.client;
@@ -15,9 +15,9 @@ class ForceUpdateService {
 
   Future<void> checkForceUpdate(BuildContext context) async {
     try {
+      final platform = Theme.of(context).platform;
       final info = await PackageInfo.fromPlatform();
       final currentVersion = info.version;
-      final platform = Theme.of(context).platform;
 
       // Supabase에서 min_version 가져오기
       final key = platform == TargetPlatform.android
@@ -54,8 +54,8 @@ class ForceUpdateService {
       builder: (context) => PopScope(
         canPop: false, // ← 뒤로가기 불가
         child: AlertDialog(
-          title: const Text('업데이트 필요'),
-          content: const Text('새로운 버전이 출시되었어요.\n계속 사용하려면 업데이트해주세요.'),
+          title: Text(context.l10n.forceUpdateTitle),
+          content: Text(context.l10n.forceUpdateContent),
           actions: [
             TextButton(
               onPressed: () async {
@@ -64,7 +64,7 @@ class ForceUpdateService {
                     : _iosStoreUrl;
                 await launchUrl(Uri.parse(url));
               },
-              child: const Text('업데이트'),
+              child: Text(context.l10n.forceUpdateAction),
             ),
           ],
         ),

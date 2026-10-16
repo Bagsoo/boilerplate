@@ -46,6 +46,12 @@ class ProfileNotifier extends Notifier<ProfileModel?> {
     state = state?.copyWith(profileImage: urlWithTimestamp);
   }
 
+  Future<void> removeAvatar() async {
+    if (state == null) return;
+    await _repository.removeAvatar();
+    state = state!.copyWith(clearProfileImage: true);
+  }
+
   Future<void> updateNotificationSettings({
     required bool pushEnabled,
     required bool marketingEnabled,

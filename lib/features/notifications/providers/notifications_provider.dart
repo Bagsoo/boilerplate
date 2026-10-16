@@ -1,72 +1,48 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../repositories/notifications_repository.dart';
+import '../../../core/pagination/paged_notifier.dart';
+import '../../../core/pagination/paged_state.dart';
 
-class NotificationsNotifier extends Notifier<List<Map<String, dynamic>>> {
-  static const _pageSize = 10;
-  bool _hasMore = true;
-  bool _isLoadingMore = false;
-
-  bool get hasMore => _hasMore;
-  bool get isLoadingMore => _isLoadingMore;
-
-  @override
-  List<Map<String, dynamic>> build() => [];
-
+class NotificationsNotifier extends PagedNotifier<Map<String, dynamic>> {
   late final _repository = ref.read(notificationsRepositoryProvider);
 
-  Future<void> loadNotifications() async {
-    _hasMore = true;
-
-    final data = await _repository.getNotifications(from: 0, to: _pageSize - 1);
-
-    state = data;
-    _hasMore = data.length == _pageSize;
-  }
-
-  Future<void> loadMore() async {
-    if (!_hasMore || _isLoadingMore) return;
-
-    _isLoadingMore = true;
-
-    final data = await _repository.getNotifications(
-      from: state.length,
-      to: state.length + _pageSize - 1,
+  @override
+  Future<List<Map<String, dynamic>>> fetchPage({
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? last,
+  }) {
+    // created_at 커서: 새 알림이 쌓여도 중복/누락 없음
+    return _repository.getNotifications(
+      limit: limit,
+      before: last?['created_at'] as String?,
     );
-
-    _isLoadingMore = false;
-    _hasMore = data.length == _pageSize;
-    state = [...state, ...data];
   }
+
+  // 기존 호출부 호환
+  Future<void> loadNotifications() => refresh();
 
   Future<void> markAsRead(String notificationId) async {
     await _repository.markAsRead(notificationId);
-
-    state = state.map((n) {
-      if (n['id'] == notificationId) {
-        return {...n, 'is_read': true};
-      }
-      return n;
-    }).toList();
+    updateItems(
+      (items) => items
+          .map((n) => n['id'] == notificationId ? {...n, 'is_read': true} : n)
+          .toList(),
+    );
   }
 
   Future<void> markAllAsRead() async {
     await _repository.markAllAsRead();
-    state = state.map((n) => {...n, 'is_read': true}).toList();
+    updateItems((items) => items.map((n) => {...n, 'is_read': true}).toList());
   }
-
-  void clear() => state = [];
 }
 
 final notificationsProvider =
-    NotifierProvider<
-      // ← < 추가
-      NotificationsNotifier,
-      List<Map<String, dynamic>>
-    >(() {
-      return NotificationsNotifier();
-    });
+    NotifierProvider<NotificationsNotifier, PagedState<Map<String, dynamic>>>(
+      NotificationsNotifier.new,
+    );
 
 final unreadCountProvider = Provider<int>((ref) {
-  final notifications = ref.watch(notificationsProvider);
-  return notifications.where((n) => n['is_read'] == false).length;
+  final items = ref.watch(notificationsProvider).items;
+  return items.where((n) => n['is_read'] == false).length;
 });

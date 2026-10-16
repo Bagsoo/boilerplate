@@ -10,13 +10,18 @@ import 'package:flutter/material.dart';
 import '../../profile/services/profile_service.dart';
 import '../../../core/services/fcm_service.dart';
 import '../../../core/logger.dart';
+import '../../../core/errors/app_error.dart';
+import '../../../core/app_config.dart';
 
 class AuthService {
   final _client = Supabase.instance.client;
   StreamSubscription? _authSubscription;
 
   // 세션 상태 감지 시작
-  void listenAuthState({required VoidCallback onSignedOut}) {
+  void listenAuthState({
+    required VoidCallback onSignedOut,
+    VoidCallback? onPasswordRecovery,
+  }) {
     _authSubscription = _client.auth.onAuthStateChange.listen((data) {
       final event = data.event;
 
@@ -24,8 +29,10 @@ class AuthService {
         case AuthChangeEvent.signedOut:
           onSignedOut();
           break;
+        case AuthChangeEvent.passwordRecovery:
+          onPasswordRecovery?.call();
+          break;
         case AuthChangeEvent.tokenRefreshed:
-          // 토큰 갱신 성공 → 아무것도 안 해도 됨
           logger.i('토큰 갱신 성공');
           break;
         case AuthChangeEvent.signedIn:
@@ -47,11 +54,18 @@ class AuthService {
     required String password,
     required String nickname,
   }) async {
-    return await _client.auth.signUp(
+    final response = await _client.auth.signUp(
       email: email,
       password: password,
       data: {'nickname': nickname},
     );
+
+    // Confirm email ON일 때: 이미 가입된 이메일이면 에러 대신 identities가 빈 배열로 옴
+    if (response.user != null &&
+        (response.user!.identities?.isEmpty ?? false)) {
+      throw const AppException(AppErrorType.emailAlreadyRegistered);
+    }
+    return response;
   }
 
   // 로그인
@@ -74,7 +88,7 @@ class AuthService {
 
       if (profile['is_deleted'] == true) {
         await _client.auth.signOut(); // 바로 로그아웃
-        throw AuthException('탈퇴한 계정이에요.');
+        throw const AppException(AppErrorType.accountDeleted);
       }
     }
 
@@ -85,7 +99,9 @@ class AuthService {
     final googleSignIn = GoogleSignIn();
     final googleUser = await googleSignIn.signIn(); // ① 구글 계정 선택 팝업
 
-    if (googleUser == null) throw Exception('구글 로그인 취소됨');
+    if (googleUser == null) {
+      throw const AppException(AppErrorType.userCancelled);
+    }
 
     final googleAuth = await googleUser.authentication;
 
@@ -137,7 +153,11 @@ class AuthService {
 
   Future<void> signOut() async {
     if (Firebase.apps.isNotEmpty) {
-      await FcmService().deleteToken();
+      try {
+        await FcmService().deleteToken();
+      } catch (e) {
+        logger.w('FCM 토큰 삭제 실패: $e'); // 실패해도 로그아웃은 진행
+      }
     }
     await _client.auth.signOut();
   }
@@ -147,10 +167,30 @@ class AuthService {
     return _client.auth.currentUser;
   }
 
+  // 비밀번호 재설정 메일 발송
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _client.auth.resetPasswordForEmail(
+      email,
+      redirectTo: AppConfig.passwordResetRedirect,
+    );
+  }
+
+  // 새 비밀번호 설정 (재설정 링크로 들어온 세션 필요)
+  Future<void> updatePassword(String newPassword) async {
+    await _client.auth.updateUser(UserAttributes(password: newPassword));
+  }
+
   // 회원 탈퇴
   Future<void> deleteAccount() async {
-    await ProfileService().deleteAvatar(); // 이미지 먼저 삭제
-    await _client.rpc('delete_user'); // 계정 삭제
+    if (Firebase.apps.isNotEmpty) {
+      try {
+        await FcmService().deleteToken();
+      } catch (e) {
+        logger.w('FCM 토큰 삭제 실패: $e');
+      }
+    }
+    await ProfileService().deleteAvatar();
+    await _client.rpc('delete_user');
     await _client.auth.signOut();
   }
 }

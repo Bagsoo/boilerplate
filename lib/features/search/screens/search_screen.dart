@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../l10n/l10n_extension.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -110,10 +111,10 @@ class _SearchScreenState extends State<SearchScreen> {
           controller: _searchController,
           focusNode: _focusNode,
           decoration: InputDecoration(
-            hintText: '검색',
+            hintText: context.l10n.search,
             border: InputBorder.none,
             hintStyle: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
             ),
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
@@ -135,7 +136,7 @@ class _SearchScreenState extends State<SearchScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
+            child: Text(context.l10n.cancel),
           ),
         ],
       ),
@@ -148,8 +149,8 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_recentSearches.isEmpty) {
       return Center(
         child: Text(
-          '최근 검색어가 없어요',
-          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4)),
+          context.l10n.searchRecentEmpty,
+          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
         ),
       );
     }
@@ -164,20 +165,20 @@ class _SearchScreenState extends State<SearchScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '최근 검색어',
+                context.l10n.searchRecentTitle,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
               TextButton(
                 onPressed: _clearRecentSearches,
                 child: Text(
-                  '전체 삭제',
+                  context.l10n.clearAll,
                   style: TextStyle(
                     fontSize: 12,
-                    color: theme.colorScheme.onSurface.withOpacity(0.4),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                 ),
               ),
@@ -210,7 +211,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: theme.colorScheme.outline.withOpacity(0.2),
+                        color: theme.colorScheme.outline.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Row(
@@ -219,7 +220,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         Icon(
                           Icons.history_rounded,
                           size: 14,
-                          color: theme.colorScheme.onSurface.withOpacity(0.4),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -235,7 +236,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           child: Icon(
                             Icons.close_rounded,
                             size: 14,
-                            color: theme.colorScheme.onSurface.withOpacity(0.4),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                           ),
                         ),
                       ],
@@ -260,13 +261,13 @@ class _SearchScreenState extends State<SearchScreen> {
             Icon(
               Icons.search_off_rounded,
               size: 48,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
             ),
             const SizedBox(height: 12),
             Text(
-              '검색 결과가 없어요',
+              context.l10n.searchNoResults,
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
               ),
             ),
           ],
@@ -277,7 +278,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: _searchResults.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final result = _searchResults[index];
         return ListTile(
@@ -290,7 +291,7 @@ class _SearchScreenState extends State<SearchScreen> {
             '더미 데이터 — 실제 앱에서 교체하세요',
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
             ),
           ),
           trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
