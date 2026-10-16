@@ -10,6 +10,13 @@ flutter build apk -t lib/main_prod.dart
 flutter build appbundle --release -t lib/main_prod.dart
 flutter build ipa -t lib/main_prod.dart
 
+# 필요한 것
+1. .env, .env.example, .env.dev, .env.prod 필요
+2. google-services.json 없이도 dev 실행 가능(Firebase 초기화는 실패해도 앱 동작)
+3. Android 릴리스 서명 가이드(아직 없음)
+4. Edge Function 코드 저장소에 포함되어 있는지 확인 필요.
+
+
 # 현재 완료된 보일러플레이트
 ✅ 인증
   - 이메일 로그인/회원가입
