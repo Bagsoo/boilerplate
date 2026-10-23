@@ -73,7 +73,8 @@ SUPABASE_PUBLISHABLE_KEY=eyJhbGci...
 SUPABASE_CALLBACK_SCHEME=앱스킴
 
 ## Supabase 설정
-1. 프로젝트 생성 후 .env에 URL, PUBLISHABLE_KEY 입력
+콘솔에서 하는 방법 :
+1. 프로젝트 생성 후 .env 등 에 URL, PUBLISHABLE_KEY 입력
 2. SQL Editor에서 순서대로 실행 (모두 필수)
    001_init.sql               profiles, 트리거, Storage 정책
    002_push_notification.sql  device_tokens, notifications, send_notification,
@@ -85,6 +86,17 @@ SUPABASE_CALLBACK_SCHEME=앱스킴
 4. Authentication → Providers → Email → Confirm email OFF (개발 시)
 5. Authentication → Providers → Google 설정
 6. Authentication → Providers → Apple 설정
+
+터미널에서 supabase 설정하는 방법 :
+
+CLI 설치 : npm install --save-dev supabase 또는 npm.cmd install --save-dev supabase
+
+1. npx.cmd supabase login
+2. npx.cmd supabase projects list
+3. npx.cmd supabase link --project-ref  실제프로젝트REF (2번에서 나온 것중 골라야함)
+4. npx.cmd supabase db push // 디비적용 - yes
+5. npx.cmd supabase migration list // 실행결과 확인
+6. 버킷 만드는 것과 구글, 애플 로그인도 터미널로 가능하지만 콘솔로하기.
 
 # 현재 완료된 보일러플레이트
 ✅ 인증

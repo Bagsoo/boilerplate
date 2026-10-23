@@ -35,11 +35,13 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
   }
 
   Future<void> _agree() async {
+    if (_isLoading) return;
     setState(() => _isLoading = true);
 
     try {
       if (_from == 'signup') {
-        // ① 회원가입 실행
+        debugPrint('[SIGNUP] 1. 회원가입 시작');
+
         final success = await ref
             .read(authProvider.notifier)
             .signUp(
@@ -49,37 +51,72 @@ class _TermsScreenState extends ConsumerState<TermsScreen> {
             );
 
         if (!success) {
+          debugPrint('[SIGNUP] 회원가입 실패');
           final error = ref.read(authProvider).error;
           if (!mounted) return;
+
           AppSnackBar.show(
             context,
             message: error?.message(context) ?? context.l10n.termsSignupFailed,
             type: SnackBarType.error,
           );
+
           if (error == AppErrorType.emailAlreadyRegistered) {
-            context.pop(); // 가입 화면으로 복귀
+            context.pop();
           }
           return;
         }
+
+        debugPrint('[SIGNUP] 2. 회원가입 성공');
       }
 
-      // ② 약관 동의 시각 저장 (signup, google 공통)
-      final userId = Supabase.instance.client.auth.currentUser!.id;
-      await _saveAgreedAt(userId);
+      final user = Supabase.instance.client.auth.currentUser;
+      final session = Supabase.instance.client.auth.currentSession;
 
-      // ③ 프로필 로드 후 홈으로
+      debugPrint('[SIGNUP] 사용자 존재: ${user != null}');
+      debugPrint('[SIGNUP] 세션 존재: ${session != null}');
+
+      if (user == null || session == null) {
+        throw StateError('회원가입 후 인증 세션이 없습니다.');
+      }
+
+      debugPrint('[SIGNUP] 3. 약관 동의 저장 시작');
+      await _saveAgreedAt(user.id);
+      debugPrint('[SIGNUP] 4. 약관 동의 저장 성공');
+
+      debugPrint('[SIGNUP] 5. 프로필 로드 시작');
       await ref.read(profileProvider.notifier).loadProfile();
-      await FcmService().initialize();
+      debugPrint('[SIGNUP] 6. 프로필 로드 완료');
+
+      // 푸시 알림 초기화 실패가 회원가입을 막지 않도록 분리
+      try {
+        debugPrint('[SIGNUP] 7. FCM 초기화 시작');
+        await FcmService().initialize();
+        debugPrint('[SIGNUP] 8. FCM 초기화 성공');
+      } catch (e, st) {
+        debugPrint('[SIGNUP] FCM 초기화 실패: $e');
+        debugPrintStack(stackTrace: st);
+      }
+
       if (!mounted) return;
+
+      debugPrint('[SIGNUP] 9. 홈 이동');
       context.go('/home');
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[SIGNUP] 오류 발생: $e');
+      debugPrintStack(stackTrace: st);
+
+      if (!mounted) return;
+
       AppSnackBar.show(
         context,
         message: mapToAppError(e).message(context),
         type: SnackBarType.error,
       );
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
