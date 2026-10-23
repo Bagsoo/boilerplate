@@ -24,22 +24,50 @@ final router = GoRouter(
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
 
-    // 온보딩 안 봤으면 온보딩으로
-    if (!hasSeenOnboarding && state.matchedLocation != '/onboarding') {
-      return '/onboarding';
-    }
+    final location = state.matchedLocation;
 
     final session = Supabase.instance.client.auth.currentSession;
     final isLoggedIn = session != null;
-    final isAuthRoute =
-        state.matchedLocation == '/login' ||
-        state.matchedLocation == '/signup' ||
-        state.matchedLocation == '/terms' ||
-        state.matchedLocation == '/forgot-password';
 
-    if (state.matchedLocation == '/reset-password') return null;
-    if (!isLoggedIn && !isAuthRoute) return '/login';
-    if (isLoggedIn && isAuthRoute) return '/home';
+    // 1. 비밀번호 재설정 딥링크는 항상 허용
+    if (location == '/reset-password') {
+      return null;
+    }
+
+    // 2. 온보딩을 아직 완료하지 않은 경우
+    if (!hasSeenOnboarding) {
+      if (location == '/onboarding') {
+        return null;
+      }
+      return '/onboarding';
+    }
+
+    // 3. 온보딩 완료 후 다시 진입한 경우
+    if (location == '/onboarding') {
+      return isLoggedIn ? '/home' : '/login';
+    }
+
+    // 4. 로그인 없이 접근 가능한 인증 화면
+    final isAuthRoute =
+        location == '/login' ||
+        location == '/signup' ||
+        location == '/terms' ||
+        location == '/forgot-password';
+
+    // 5. 로그인하지 않은 사용자
+    if (!isLoggedIn) {
+      if (isAuthRoute) return null;
+      return '/login';
+    }
+
+    // 6. 로그인한 사용자는 로그인/가입 화면에 접근 불필요
+    if (location == '/login' ||
+        location == '/signup' ||
+        location == '/forgot-password') {
+      return '/home';
+    }
+
+    // 7. 정상적인 화면 이동 허용
     return null;
   },
   routes: [

@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_pt/l10n/app_localizations.dart';
 import 'core/widgets/offline_banner.dart';
-import 'core/route.dart';
+import 'core/app_router.dart';
 import 'core/app_theme.dart';
 import 'core/logger.dart';
 import 'core/app_config.dart';

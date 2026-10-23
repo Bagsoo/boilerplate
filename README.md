@@ -37,7 +37,54 @@ flutter build ipa -t lib/main_prod.dart
 1-1. 누락된 파일 만들기(.gitkeep 했으니 확인 후)
 (powershell) New-Item -ItemType Directory -Force -Path assets/icon, assets/splash, assets/onboarding
 
+2. Flutter 앱이름
+  직접 수정:
+  - Android: android/app/src/main/AndroidManifest.xml
+    android:label="flutter_pt" → 새 앱 이름으로 변경
+  - iOS: ios/Runner/Info.plist
+    <key>CFBundleDisplayName</key>
+    <string>flutter_pt</string> → 새 앱 이름으로 변경
 
+3. Firebase 프로젝트
+  - google-services.json
+  - GoogleService-Info.plist
+##########################################################################
+
+
+## 스킴 변경
+딥링크 스킴 `flutterpt`를 새 앱에 맞게 변경해야 해요.
+
+1. android/app/src/main/AndroidManifest.xml
+   android:scheme="flutterpt" → 새 스킴으로 변경
+
+2. ios/Runner/Info.plist
+   <string>flutterpt</string> → 새 스킴으로 변경
+
+3. .env
+   SUPABASE_CALLBACK_SCHEME=flutterpt → 새 스킴으로 변경
+
+4. Supabase Redirect URLs (스킴://app/reset-password). 또한 AuthService.redirectTo 수정 항목(비밀번호 재설정 섹션 2번)은 이제 AppConfig가 .env 스킴을 쓰므로 삭제
+
+## .env 파일 설정
+프로젝트 루트에 .env, .env.dev, .env.prod 파일 생성:
+
+SUPABASE_URL=https://xxxxxxxxxxxxxx.supabase.co
+SUPABASE_PUBLISHABLE_KEY=eyJhbGci...
+SUPABASE_CALLBACK_SCHEME=앱스킴
+
+## Supabase 설정
+1. 프로젝트 생성 후 .env에 URL, PUBLISHABLE_KEY 입력
+2. SQL Editor에서 순서대로 실행 (모두 필수)
+   001_init.sql               profiles, 트리거, Storage 정책
+   002_push_notification.sql  device_tokens, notifications, send_notification,
+                              register_device_token, delete_user
+   003_app_config.sql         강제 업데이트용 app_config
+   ※ delete_user가 device_tokens를 참조하므로 002를 빠뜨리면 회원탈퇴 실패
+   ※ send_notification은 클라이언트 호출 차단(revoke), 서버/Edge Function에서만 사용
+3. Storage → avatars 버킷 생성 (Public bucket ON)
+4. Authentication → Providers → Email → Confirm email OFF (개발 시)
+5. Authentication → Providers → Google 설정
+6. Authentication → Providers → Apple 설정
 
 # 현재 완료된 보일러플레이트
 ✅ 인증
@@ -148,55 +195,6 @@ flutter build ipa -t lib/main_prod.dart
 28. 테스트
 29. 공통 페이지네이션
 30. 권한 요청 유틸
-
-
-2. Flutter 앱이름
-  직접 수정:
-  - Android: android/app/src/main/AndroidManifest.xml
-    android:label="flutter_pt" → 새 앱 이름으로 변경
-  - iOS: ios/Runner/Info.plist
-    <key>CFBundleDisplayName</key>
-    <string>flutter_pt</string> → 새 앱 이름으로 변경
-
-3. Firebase 프로젝트
-  - google-services.json
-  - GoogleService-Info.plist
-##########################################################################
-
-## 스킴 변경
-딥링크 스킴 `flutterpt`를 새 앱에 맞게 변경해야 해요.
-
-1. android/app/src/main/AndroidManifest.xml
-   android:scheme="flutterpt" → 새 스킴으로 변경
-
-2. ios/Runner/Info.plist
-   <string>flutterpt</string> → 새 스킴으로 변경
-
-3. .env
-   SUPABASE_CALLBACK_SCHEME=flutterpt → 새 스킴으로 변경
-
-4. Supabase Redirect URLs (스킴://app/reset-password). 또한 AuthService.redirectTo 수정 항목(비밀번호 재설정 섹션 2번)은 이제 AppConfig가 .env 스킴을 쓰므로 삭제
-
-## .env 파일 설정
-프로젝트 루트에 .env, .env.dev, .env.prod 파일 생성:
-
-SUPABASE_URL=https://xxxxxxxxxxxxxx.supabase.co
-SUPABASE_PUBLISHABLE_KEY=eyJhbGci...
-SUPABASE_CALLBACK_SCHEME=앱스킴
-
-## Supabase 설정
-1. 프로젝트 생성 후 .env에 URL, PUBLISHABLE_KEY 입력
-2. SQL Editor에서 순서대로 실행 (모두 필수)
-   001_init.sql               profiles, 트리거, Storage 정책
-   002_push_notification.sql  device_tokens, notifications, send_notification,
-                              register_device_token, delete_user
-   003_app_config.sql         강제 업데이트용 app_config
-   ※ delete_user가 device_tokens를 참조하므로 002를 빠뜨리면 회원탈퇴 실패
-   ※ send_notification은 클라이언트 호출 차단(revoke), 서버/Edge Function에서만 사용
-3. Storage → avatars 버킷 생성 (Public bucket ON)
-4. Authentication → Providers → Email → Confirm email OFF (개발 시)
-5. Authentication → Providers → Google 설정
-6. Authentication → Providers → Apple 설정
 
 # Firebase 프로젝트 설정[구글로그인, 푸시알림, crashlytics 각각 적혀있긴함] ##################
 1. console.firebase.google.com 접속 → 프로젝트 추가
