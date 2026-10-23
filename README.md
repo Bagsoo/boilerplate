@@ -16,6 +16,28 @@ flutter build ipa -t lib/main_prod.dart
 3. Android 릴리스 서명 가이드(아직 없음)
 4. Edge Function 코드 저장소에 포함되어 있는지 확인 필요.
 
+##########################################################################
+# boiler plate 사용법
+1. 패키지명 바꿔주기
+  - Android ex>
+    dart run change_app_package_name:main com.answer.newapp
+    위 명령어 치면 Android 파일들을 대부분 자동으로 변경해줌.
+    수동으로 한다면
+      android/app/build.gradle.kts 또는 build.gradle의 applcationId
+      android/app/src/main/kotlin/...  패키지 폴더명
+      MainActivity.kt에서 package com.answer.xxx
+  - iOS Bundle ID
+    Xcode 있다면 Runner -> Signing & Capabilities -> Bundle Identifier 여기서 기존 번들ID를 새걸로 바꿔준다
+    Xcode 없다면
+      ios/Runner.xcodeproj/project.pbxproj 에서 PRODUCT_BUNDLE_IDENTIFIER 
+      ios/Runner/Info.plist는 일반적으로
+        <key>CFBundleIdentifier</key>
+        <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string> 이렇게 되어 있음.
+
+1-1. 누락된 파일 만들기(.gitkeep 했으니 확인 후)
+(powershell) New-Item -ItemType Directory -Force -Path assets/icon, assets/splash, assets/onboarding
+
+
 
 # 현재 완료된 보일러플레이트
 ✅ 인증
@@ -127,24 +149,6 @@ flutter build ipa -t lib/main_prod.dart
 29. 공통 페이지네이션
 30. 권한 요청 유틸
 
-##########################################################################
-# boiler plate 사용법
-1. 패키지명 바꿔주기
-  - Android ex>
-    dart run change_app_package_name:main com.answer.newapp
-    위 명령어 치면 Android 파일들을 대부분 자동으로 변경해줌.
-    수동으로 한다면
-      android/app/build.gradle.kts 또는 build.gradle의 applcationId
-      android/app/src/main/kotlin/...  패키지 폴더명
-      MainActivity.kt에서 package com.answer.xxx
-  - iOS Bundle ID
-    Xcode 있다면 Runner -> Signing & Capabilities -> Bundle Identifier 여기서 기존 번들ID를 새걸로 바꿔준다
-    Xcode 없다면
-      ios/Runner.xcodeproj/project.pbxproj 에서 PRODUCT_BUNDLE_IDENTIFIER 
-      ios/Runner/Info.plist는 일반적으로
-        <key>CFBundleIdentifier</key>
-        <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string> 이렇게 되어 있음.
-      
 
 2. Flutter 앱이름
   직접 수정:
@@ -174,14 +178,14 @@ flutter build ipa -t lib/main_prod.dart
 4. Supabase Redirect URLs (스킴://app/reset-password). 또한 AuthService.redirectTo 수정 항목(비밀번호 재설정 섹션 2번)은 이제 AppConfig가 .env 스킴을 쓰므로 삭제
 
 ## .env 파일 설정
-프로젝트 루트에 .env 파일 생성:
+프로젝트 루트에 .env, .env.dev, .env.prod 파일 생성:
 
 SUPABASE_URL=https://xxxxxxxxxxxxxx.supabase.co
 SUPABASE_PUBLISHABLE_KEY=eyJhbGci...
 SUPABASE_CALLBACK_SCHEME=앱스킴
 
 ## Supabase 설정
-1. 프로젝트 생성 후 .env에 URL, ANON_KEY 입력
+1. 프로젝트 생성 후 .env에 URL, PUBLISHABLE_KEY 입력
 2. SQL Editor에서 순서대로 실행 (모두 필수)
    001_init.sql               profiles, 트리거, Storage 정책
    002_push_notification.sql  device_tokens, notifications, send_notification,
